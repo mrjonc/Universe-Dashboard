@@ -437,13 +437,19 @@ function Calendar() {
                       <div style={{ display: "flex", gap: "4px" }}>
                         <button
                           className={styles.actionBtn}
-                          onClick={() => handleOpenViewModal(dayShow)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenViewModal(dayShow);
+                          }}
                         >
                           Exibir
                         </button>
                         <button
                           className={styles.actionBtn}
-                          onClick={() => handleOpenBookingModal(dayShow)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenBookingModal(dayShow);
+                          }}
                         >
                           Editar Book
                         </button>
@@ -451,17 +457,22 @@ function Calendar() {
                     ) : (
                       <button
                         className={styles.actionBtn}
-                        onClick={() => handleOpenBookingModal(dayShow)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenBookingModal(dayShow);
+                        }}
                       >
                         Bookar
                       </button>
                     )}
 
                     <div className={styles.showControls}>
-                      <button onClick={() => handleOpenBookingModal(dayShow)}>
-                        Editar
-                      </button>
-                      <button onClick={() => handleDeleteShow(dayShow.id)}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteShow(dayShow.id);
+                        }}
+                      >
                         Excluir
                       </button>
                     </div>
@@ -687,7 +698,9 @@ function Calendar() {
                 </strong>
                 <ul>
                   {m.wrestler_ids?.map((wId, i) => {
-                    const wrestler = wrestlers.find((w) => w.id == wId);
+                    const wrestler = wrestlers.find(
+                      (w) => String(w.id) === String(wId),
+                    );
                     return (
                       <li key={i}>
                         {wrestler ? wrestler.name : "Não definido"}
@@ -709,7 +722,9 @@ function Calendar() {
                 {s.description && <p>{s.description}</p>}
                 <ul>
                   {s.wrestler_ids?.map((wId, i) => {
-                    const wrestler = wrestlers.find((w) => w.id == wId);
+                    const wrestler = wrestlers.find(
+                      (w) => String(w.id) == String(wId),
+                    );
                     return (
                       <li key={i}>
                         {wrestler ? wrestler.name : "Não definido"}
