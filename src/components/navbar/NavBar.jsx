@@ -1,0 +1,25 @@
+import styles from "./navbar.module.css";
+import { Link } from "react-router-dom";
+
+function NavBar() {
+  return (
+    <>
+      <nav className={styles.navbar}>
+        <img
+          src="../src/assets/wwe2k26logo.png"
+          alt="Logo do WWE 2K26"
+          width="100px"
+          className={styles.logo}
+        />
+
+        <div className={styles.btn}>
+          <Link to="/">CALENDAR</Link>
+          <Link to="/roster">ROSTER</Link>
+          <Link to="/champions">CHAMPIONS</Link>
+        </div>
+      </nav>
+    </>
+  );
+}
+
+export default NavBar;

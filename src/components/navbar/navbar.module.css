@@ -1,0 +1,33 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: rgb(56, 53, 53);
+  height: 70px;
+}
+
+.btn {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn a {
+  cursor: pointer;
+  padding: 1rem;
+  background: none;
+  border: none;
+  color: white;
+  font-weight: bolder;
+  text-decoration: none;
+}
+
+.btn a:hover {
+  background-color: rgb(65, 61, 61);
+  border-radius: 1rem;
+}
