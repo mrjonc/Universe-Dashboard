@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabaseClient.js";
 import ChangeTheChampionModal from "./ChangeTheChampionModal.jsx";
+import LoadingSpinner from "../../components/animations/LoadingSpinner.jsx";
 
 function Champions() {
   const [titles, setTitles] = useState([]);
@@ -46,11 +47,7 @@ function Champions() {
   };
 
   if (loading) {
-    return (
-      <p style={{ textAlign: "center", color: "white" }}>
-        Carregando campeões...
-      </p>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
@@ -92,7 +89,6 @@ function Champions() {
                 minHeight: "380px",
               }}
             >
-              {/* Seção Superior e Central do Card */}
               <div
                 style={{
                   display: "flex",
@@ -102,7 +98,6 @@ function Champions() {
                   justifyContent: "space-between",
                 }}
               >
-                {/* Imagem do Cinturão */}
                 <div
                   style={{
                     height: "100px",
@@ -125,7 +120,6 @@ function Champions() {
                   )}
                 </div>
 
-                {/* Título e Marca */}
                 <div>
                   <h3
                     style={{
@@ -160,7 +154,6 @@ function Champions() {
                   }}
                 />
 
-                {/* Dados do Detentor do Título */}
                 <div
                   style={{
                     minHeight: "100px",
@@ -204,7 +197,6 @@ function Champions() {
                 </div>
               </div>
 
-              {/* Botões alinhados no rodapé do Card */}
               <div
                 style={{
                   display: "flex",
@@ -223,9 +215,10 @@ function Champions() {
                     borderRadius: "4px",
                     cursor: "pointer",
                     fontSize: "0.8rem",
+                    textTransform: "uppercase",
                   }}
                 >
-                  Trocar Campeão
+                  Change The Champion
                 </button>
 
                 <button
@@ -238,9 +231,10 @@ function Champions() {
                     borderRadius: "4px",
                     cursor: "pointer",
                     fontSize: "0.8rem",
+                    textTransform: "uppercase",
                   }}
                 >
-                  Deixar Vago
+                  Vacate Title
                 </button>
               </div>
             </div>
@@ -248,7 +242,6 @@ function Champions() {
         })}
       </div>
 
-      {/* Modal posicionado fora do .map() */}
       {selectedTitleToEdit && (
         <ChangeTheChampionModal
           title={selectedTitleToEdit}

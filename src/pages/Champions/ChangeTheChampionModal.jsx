@@ -99,7 +99,7 @@ function EditChampionModal({ title, onClose, onSuccess }) {
                 fontSize: "0.85rem",
               }}
             >
-              Selecione o novo campeão:
+              Select the new champion:
             </label>
 
             <select
@@ -116,7 +116,7 @@ function EditChampionModal({ title, onClose, onSuccess }) {
                 borderRadius: "4px",
               }}
             >
-              <option value="">-- Selecione --</option>
+              <option value="">-- Select the wrestler --</option>
               {optionsList.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name}
@@ -144,7 +144,7 @@ function EditChampionModal({ title, onClose, onSuccess }) {
                   cursor: "pointer",
                 }}
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 type="submit"
@@ -158,7 +158,7 @@ function EditChampionModal({ title, onClose, onSuccess }) {
                   cursor: "pointer",
                 }}
               >
-                {saving ? "Salvando..." : "Salvar"}
+                {saving ? "Saving..." : "Save"}
               </button>
             </div>
           </form>

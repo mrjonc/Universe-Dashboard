@@ -8,6 +8,7 @@ import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import AddShowModal from "./addShowModal.jsx";
 import ViewCardModal from "./viewCardModal.jsx";
 import BookingModal from "./bookingModal.jsx";
+import LoadingSpinner from "../../components/animations/LoadingSpinner.jsx";
 
 function Calendar() {
   const daysArray = Array.from({ length: DAYS_IN_MONTH }, (_, i) => i + 1);
@@ -217,7 +218,7 @@ function Calendar() {
         setSegmentsData([
           {
             segment_number: 1,
-            title: "Promo de Abertura",
+            title: "Open Promo",
             description: "",
             selected_wrestlers: [""],
           },
@@ -237,7 +238,7 @@ function Calendar() {
       setSegmentsData([
         {
           segment_number: 1,
-          title: "Promo de Abertura",
+          title: "Open Promo",
           description: "",
           selected_wrestlers: [""],
         },
@@ -468,7 +469,7 @@ function Calendar() {
   if (loading)
     return (
       <p style={{ textAlign: "center", padding: "2rem", color: "white" }}>
-        Carregando calendário...
+        <LoadingSpinner />
       </p>
     );
 
@@ -532,7 +533,7 @@ function Calendar() {
                             handleOpenViewModal(dayShow);
                           }}
                         >
-                          Exibir
+                          Exibition
                         </button>
                         <button
                           className={styles.actionBtn}
@@ -541,7 +542,7 @@ function Calendar() {
                             handleOpenBookingModal(dayShow);
                           }}
                         >
-                          Editar Book
+                          Edit Book
                         </button>
                       </div>
                     ) : (
@@ -563,7 +564,7 @@ function Calendar() {
                           handleDeleteShow(dayShow.id);
                         }}
                       >
-                        Excluir
+                        Delete
                       </button>
                     </div>
                   </div>
@@ -581,7 +582,10 @@ function Calendar() {
         </div>
 
         {selectedDay && (
-          <div className={styles.selectedInfo}>
+          <div
+            className={styles.selectedInfo}
+            style={{ color: "rgb(201, 197, 197)" }}
+          >
             Dia selecionado:{" "}
             <strong>
               {selectedDay} de {MONTHS[currentMonthIndex]}

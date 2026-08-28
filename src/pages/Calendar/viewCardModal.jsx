@@ -81,11 +81,18 @@ export default function ViewCardModal({
     <div className={styles.modalOverlay}>
       <div
         className={styles.modalContent}
-        style={{ backgroundColor: "#383535", color: "white" }}
+        style={{
+          backgroundColor: "#383535",
+          color: "white",
+        }}
       >
-        <h3>{activeShow?.brands?.name || "Card do Show"}</h3>
+        <h3 style={{ display: "flex", justifyContent: "center" }}>
+          {activeShow?.brands?.name || "Card do Show"}
+        </h3>
 
-        <h4>--- LUTAS ---</h4>
+        <h4 style={{ display: "flex", justifyContent: "center" }}>
+          ---------- MATCHES ----------
+        </h4>
         {matchesData && matchesData.length > 0 ? (
           matchesData.map((match, idx) => (
             <div
@@ -98,21 +105,21 @@ export default function ViewCardModal({
               }}
             >
               <h5>
-                Luta {idx + 1} ({match.match_type || "1v1"})
+                Match {idx + 1} ({match.match_type || "1v1"})
               </h5>
               {match.stipulation && (
                 <p>
-                  <strong>Estipulação:</strong> {match.stipulation}
+                  <strong>Stipulation:</strong> {match.stipulation}
                 </p>
               )}
               <div>{renderMatchParticipants(match)}</div>
             </div>
           ))
         ) : (
-          <p>Nenhuma luta agendada.</p>
+          <p>No matches scheduled</p>
         )}
 
-        <h4>--- SEGMENTOS ---</h4>
+        <h4>--- SEGMENTS ---</h4>
         {segmentsData && segmentsData.length > 0 ? (
           segmentsData.map((seg, idx) => {
             const segmentWrestlers =
@@ -132,7 +139,7 @@ export default function ViewCardModal({
                 {seg.description && <p>{seg.description}</p>}
                 {segmentWrestlers.length > 0 && (
                   <p>
-                    <strong>Participantes:</strong>{" "}
+                    <strong>Participants:</strong>{" "}
                     {segmentWrestlers
                       .map((id) => getWrestlerName(id, wrestlers))
                       .filter(Boolean)
@@ -143,7 +150,7 @@ export default function ViewCardModal({
             );
           })
         ) : (
-          <p>Nenhum segmento agendado.</p>
+          <p>No segments scheduled.</p>
         )}
 
         <div
@@ -155,8 +162,8 @@ export default function ViewCardModal({
             justifyContent: "flex-end",
           }}
         >
-          {onEdit && <button onClick={onEdit}>Editar Card</button>}
-          <button onClick={onClose}>Fechar</button>
+          {onEdit && <button onClick={onEdit}>Edit Card</button>}
+          <button onClick={onClose}>Close</button>
         </div>
       </div>
     </div>

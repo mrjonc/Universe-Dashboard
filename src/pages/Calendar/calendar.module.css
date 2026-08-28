@@ -116,6 +116,18 @@
   margin-top: 1rem;
 }
 
+.modalActions button {
+  background-color: #d7182a;
+  color: white;
+  cursor: pointer;
+  padding: 0.6rem;
+  transition: background-color 0.5s ease;
+}
+
+.modalActions button:hover {
+  background-color: rgb(19, 13, 13);
+}
+
 .showContent {
   display: flex;
   flex-direction: column;
@@ -155,7 +167,31 @@
   gap: 0.25rem;
 }
 
+.matchBox button {
+  padding: 0.6rem;
+  color: white;
+  background-color: #d7182a;
+  cursor: pointer;
+  transition: background-color 0.5s ease;
+}
+
+.matchBox button:hover {
+  background-color: rgb(19, 13, 13);
+}
+
 .cardDetail {
   border-bottom: 1px solid #eee;
   padding: 6px 0;
+}
+
+.addShow {
+  padding: 0.6rem;
+  color: white;
+  background-color: #d7182a;
+  cursor: pointer;
+  transition: background-color 0.5s ease;
+}
+
+.addShow:hover {
+  background-color: rgb(19, 13, 13);
 }

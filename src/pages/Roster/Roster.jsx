@@ -5,6 +5,7 @@ import { sortBrands, groupItemsByBrand } from "../../utils/rosterHelpers.js";
 import WrestlerCard from "../../components/rosterComponents/WrestlerCard.jsx";
 import TagTeamCard from "../../components/rosterComponents/TagTeamCard.jsx";
 import CreateWrestlerOrTagModal from "./createWrestlerOrTagModal.jsx";
+import LoadingSpinner from "../../components/animations/LoadingSpinner.jsx";
 
 export default function Roster() {
   const [activeTab, setActiveTab] = useState("superstars");
@@ -97,7 +98,7 @@ export default function Roster() {
   if (loading) {
     return (
       <p style={{ textAlign: "center", padding: "2rem", color: "white" }}>
-        Carregando roster...
+        <LoadingSpinner />
       </p>
     );
   }

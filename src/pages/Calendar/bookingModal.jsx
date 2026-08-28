@@ -34,86 +34,86 @@ export default function BookingModal({
     switch (type) {
       case "1v1":
         return [
-          { key: "team_a", label: "Lado A / Time 1", size: 1 },
-          { key: "team_b", label: "Lado B / Time 2", size: 1 },
+          { key: "team_a", label: "Side A / Team 1", size: 1 },
+          { key: "team_b", label: "Side B / Team 2", size: 1 },
         ];
       case "2v2":
         return [
-          { key: "team_a", label: "Lado A / Time 1", size: 2 },
-          { key: "team_b", label: "Lado B / Time 2", size: 2 },
+          { key: "team_a", label: "Side A / Team 1", size: 2 },
+          { key: "team_b", label: "Side B / Team 2", size: 2 },
         ];
       case "3v3":
         return [
-          { key: "team_a", label: "Lado A / Time 1", size: 3 },
-          { key: "team_b", label: "Lado B / Time 2", size: 3 },
+          { key: "team_a", label: "Side A / Team 1", size: 3 },
+          { key: "team_b", label: "Side B / Team 2", size: 3 },
         ];
       case "4v4":
         return [
-          { key: "team_a", label: "Lado A / Time 1", size: 4 },
-          { key: "team_b", label: "Lado B / Time 2", size: 4 },
+          { key: "team_a", label: "Side A / Team 1", size: 4 },
+          { key: "team_b", label: "Side B / Team 2", size: 4 },
         ];
       case "1v2":
         return [
-          { key: "team_a", label: "Lado A / Time 1", size: 1 },
-          { key: "team_b", label: "Lado B / Time 2", size: 2 },
+          { key: "team_a", label: "Side A / Team 1", size: 1 },
+          { key: "team_b", label: "Side B / Team 2", size: 2 },
         ];
       case "1v3":
         return [
-          { key: "team_a", label: "Lado A / Time 1", size: 1 },
-          { key: "team_b", label: "Lado B / Time 2", size: 3 },
+          { key: "team_a", label: "Side A / Team 1", size: 1 },
+          { key: "team_b", label: "Side B / Team 2", size: 3 },
         ];
       case "2v3":
         return [
-          { key: "team_a", label: "Lado A / Time 1", size: 2 },
-          { key: "team_b", label: "Lado B / Time 2", size: 3 },
+          { key: "team_a", label: "Side A / Team 1", size: 2 },
+          { key: "team_b", label: "Side B / Team 2", size: 3 },
         ];
       case "1v1v1":
         return [
-          { key: "team_a", label: "Lado A / Time 1", size: 1 },
-          { key: "team_b", label: "Lado B / Time 2", size: 1 },
-          { key: "team_c", label: "Lado C / Time 3", size: 1 },
+          { key: "team_a", label: "Side A / Team 1", size: 1 },
+          { key: "team_b", label: "Side B / Team 2", size: 1 },
+          { key: "team_c", label: "Side C / Team 3", size: 1 },
         ];
       case "2v2v2":
         return [
-          { key: "team_a", label: "Lado A / Time 1", size: 2 },
-          { key: "team_b", label: "Lado B / Time 2", size: 2 },
-          { key: "team_c", label: "Lado C / Time 3", size: 2 },
+          { key: "team_a", label: "Side A / Team 1", size: 2 },
+          { key: "team_b", label: "Side B / Team 2", size: 2 },
+          { key: "team_c", label: "Side C / Team 3", size: 2 },
         ];
       case "1v1v1v1":
         return [
-          { key: "team_a", label: "Lado A / Time 1", size: 1 },
-          { key: "team_b", label: "Lado B / Time 2", size: 1 },
-          { key: "team_c", label: "Lado C / Time 3", size: 1 },
-          { key: "team_d", label: "Lado D / Time 4", size: 1 },
+          { key: "team_a", label: "Side A / Team 1", size: 1 },
+          { key: "team_b", label: "Side B / Team 2", size: 1 },
+          { key: "team_c", label: "Side C / Team 3", size: 1 },
+          { key: "team_d", label: "Side D / Team 4", size: 1 },
         ];
       case "2v2v2v2":
         return [
-          { key: "team_a", label: "Lado A / Time 1", size: 2 },
-          { key: "team_b", label: "Lado B / Time 2", size: 2 },
-          { key: "team_c", label: "Lado C / Time 3", size: 2 },
-          { key: "team_d", label: "Lado D / Time 4", size: 2 },
+          { key: "team_a", label: "Side A / Team 1", size: 2 },
+          { key: "team_b", label: "Side B / Team 2", size: 2 },
+          { key: "team_c", label: "Side C / Team 3", size: 2 },
+          { key: "team_d", label: "Side D / Team 4", size: 2 },
         ];
       case "1v1v1v1v1":
         return [
-          { key: "team_a", label: "Lado A / Time 1", size: 1 },
-          { key: "team_b", label: "Lado B / Time 2", size: 1 },
-          { key: "team_c", label: "Lado C / Time 3", size: 1 },
-          { key: "team_d", label: "Lado D / Time 4", size: 1 },
-          { key: "team_e", label: "Lado E / Time 5", size: 1 },
+          { key: "team_a", label: "Side A / Team 1", size: 1 },
+          { key: "team_b", label: "Side B / Team 2", size: 1 },
+          { key: "team_c", label: "Side C / Team 3", size: 1 },
+          { key: "team_d", label: "Side D / Team 4", size: 1 },
+          { key: "team_e", label: "Side E / Team 5", size: 1 },
         ];
       case "1v1v1v1v1v1":
         return [
-          { key: "team_a", label: "Lado A / Time 1", size: 1 },
-          { key: "team_b", label: "Lado B / Time 2", size: 1 },
-          { key: "team_c", label: "Lado C / Time 3", size: 1 },
-          { key: "team_d", label: "Lado D / Time 4", size: 1 },
-          { key: "team_e", label: "Lado E / Time 5", size: 1 },
-          { key: "team_f", label: "Lado F / Time 6", size: 1 },
+          { key: "team_a", label: "Side A / Team 1", size: 1 },
+          { key: "team_b", label: "Side B / Team 2", size: 1 },
+          { key: "team_c", label: "Side C / Team 3", size: 1 },
+          { key: "team_d", label: "Side D / Team 4", size: 1 },
+          { key: "team_e", label: "Side E / Team 5", size: 1 },
+          { key: "team_f", label: "Side F / Team 6", size: 1 },
         ];
       default:
         return [
-          { key: "team_a", label: "Lado A / Time 1", size: 1 },
-          { key: "team_b", label: "Lado B / Time 2", size: 1 },
+          { key: "team_a", label: "Side A / Team 1", size: 1 },
+          { key: "team_b", label: "Side B / Team 2", size: 1 },
         ];
     }
   };
@@ -190,7 +190,7 @@ export default function BookingModal({
                     }}
                   >
                     <strong>
-                      Entradas do Royal Rumble ({matchConfig.size} Lutadores)
+                      Royal Rumble Entries ({matchConfig.size} Wrestlers)
                     </strong>
 
                     <div
@@ -309,18 +309,18 @@ export default function BookingModal({
           onClick={onAddMatch}
           style={{ marginTop: "10px", width: "100%" }}
         >
-          + Adicionar Nova Luta
+          + Add new match
         </button>
 
-        <h4>--- SEGMENTOS ---</h4>
+        <h4>--- SEGMENTS ---</h4>
         {segmentsData.map((seg, sIdx) => (
           <div key={sIdx} className={styles.matchBox}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <h5>Segmento {sIdx + 1}</h5>
-              <button onClick={() => onRemoveSegment(sIdx)}>Excluir</button>
+              <h5>Segment {sIdx + 1}</h5>
+              <button onClick={() => onRemoveSegment(sIdx)}>Delete</button>
             </div>
 
-            <label>Título do Segmento:</label>
+            <label>Segment title:</label>
             <input
               type="text"
               placeholder="Ex: Promo do Campeão, Ataque Backstage..."
@@ -328,7 +328,7 @@ export default function BookingModal({
               onChange={(e) => onSegmentChange(sIdx, "title", e.target.value)}
             />
 
-            <label>Descrição / Roteiro:</label>
+            <label>Description</label>
             <textarea
               placeholder="Detalhes do que acontece na cena..."
               value={seg.description}
@@ -337,7 +337,7 @@ export default function BookingModal({
               }
             />
 
-            <label>Participantes:</label>
+            <label>Participants:</label>
             {seg.selected_wrestlers.map((wId, wIdx) => (
               <select
                 key={wIdx}
@@ -346,7 +346,7 @@ export default function BookingModal({
                   onSegmentWrestlerSelect(sIdx, wIdx, e.target.value)
                 }
               >
-                <option value="">-- Selecione o Participante --</option>
+                <option value="">-- Select the participant --</option>
                 {sortedWrestlers.map((w) => (
                   <option key={w.id} value={w.id}>
                     {w.name}
@@ -355,7 +355,7 @@ export default function BookingModal({
               </select>
             ))}
             <button type="button" onClick={() => onAddWrestlerToSegment(sIdx)}>
-              + Adicionar Participante
+              + Add Participant
             </button>
           </div>
         ))}
@@ -366,12 +366,12 @@ export default function BookingModal({
           onClick={onAddSegment}
           style={{ marginTop: "10px", width: "100%" }}
         >
-          + Adicionar Novo Segmento
+          + Add new segment
         </button>
 
         <div className={styles.modalActions} style={{ marginTop: "20px" }}>
-          <button onClick={onClose}>Cancelar</button>
-          <button onClick={onSave}>Salvar Card</button>
+          <button onClick={onClose}>Cancel</button>
+          <button onClick={onSave}>Save Card</button>
         </div>
       </div>
     </div>
