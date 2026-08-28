@@ -6,9 +6,9 @@ function NavBar() {
     <>
       <nav className={styles.navbar}>
         <img
-          src="../src/assets/wwe2k26logo.png"
+          src="../src/assets/wwe_universe.png"
           alt="Logo do WWE 2K26"
-          width="100px"
+          width="150px"
           className={styles.logo}
         />
 
