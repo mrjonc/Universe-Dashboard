@@ -87,7 +87,7 @@ export default function ViewCardModal({
         }}
       >
         <h3 style={{ display: "flex", justifyContent: "center" }}>
-          {activeShow?.brands?.name || "Card do Show"}
+          {activeShow?.events?.event_name || "Card do Show"}
         </h3>
 
         <h4 style={{ display: "flex", justifyContent: "center" }}>

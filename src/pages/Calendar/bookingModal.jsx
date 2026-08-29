@@ -18,7 +18,6 @@ export default function BookingModal({
   onSegmentWrestlerSelect,
   onAddWrestlerToSegment,
 }) {
-  // Ordena os lutadores em ordem alfabética (A-Z) considerando letras maiúsculas/minúsculas e acentos
   const sortedWrestlers = React.useMemo(() => {
     return [...wrestlers].sort((a, b) =>
       (a.name || "").localeCompare(b.name || ""),
@@ -127,7 +126,7 @@ export default function BookingModal({
           color: "white",
         }}
       >
-        <h3>{activeShow.brands?.name}</h3>
+        <h3>{activeShow.events?.name || activeShow.events?.event_name}</h3>
 
         <h4>--- MATCHES ---</h4>
         {matchesData.map((match, idx) => (

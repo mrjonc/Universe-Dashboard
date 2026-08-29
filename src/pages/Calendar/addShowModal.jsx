@@ -3,7 +3,7 @@ import styles from "./calendar.module.css";
 
 export default function AddShowModal({
   selectedDay,
-  brands,
+  brands = [],
   newBrandId,
   setNewBrandId,
   newMatchesCount,
@@ -22,15 +22,22 @@ export default function AddShowModal({
       >
         <h3>Add a Show - Day {selectedDay}</h3>
 
-        <label>Brand:</label>
+        <label>Event:</label>
         <select
           value={newBrandId}
           onChange={(e) => setNewBrandId(e.target.value)}
-          style={{ width: "100px" }}
+          style={{
+            width: "100%",
+            padding: "6px",
+            marginBottom: "10px",
+            backgroundColor: "#2a2a2a",
+            color: "white",
+            border: "1px solid #444",
+          }}
         >
           {brands.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
+            <option key={b.id} value={b.id} style={{ color: "black" }}>
+              {b.event_name || b.name || `Event ${b.id}`}
             </option>
           ))}
         </select>
@@ -41,7 +48,7 @@ export default function AddShowModal({
           min="1"
           value={newMatchesCount}
           onChange={(e) => setNewMatchesCount(e.target.value)}
-          style={{ width: "35px" }}
+          style={{ width: "50px", marginLeft: "8px" }}
         />
 
         <div className={styles.modalActions}>

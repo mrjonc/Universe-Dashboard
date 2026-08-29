@@ -44,14 +44,30 @@ function Calendar() {
 
   async function fetchInitialData() {
     setLoading(true);
-    const [showsRes, brandsRes, superstarsRes] = await Promise.all([
-      supabase.from("shows").select(`*, brands (name, image_url)`),
-      supabase.from("brands").select("*"),
+
+    const [showsRes, eventsRes, superstarsRes] = await Promise.all([
+      supabase.from("shows").select("*"),
+      supabase.from("events").select("*"),
       supabase.from("superstars").select("*"),
     ]);
 
-    if (showsRes.data) setShows(showsRes.data);
-    if (brandsRes.data) setBrands(brandsRes.data);
+    if (eventsRes.data) {
+      setBrands(eventsRes.data);
+    }
+
+    if (showsRes.data && eventsRes.data) {
+      const formattedShows = showsRes.data.map((show) => {
+        const eventId = show.brand_id || show.event_id;
+        const matchedEvent = eventsRes.data.find(
+          (e) => String(e.id) === String(eventId),
+        );
+        return {
+          ...show,
+          events: matchedEvent || null,
+        };
+      });
+      setShows(formattedShows);
+    }
 
     if (superstarsRes.data) {
       const sorted = [...superstarsRes.data].sort((a, b) =>
@@ -100,17 +116,25 @@ function Calendar() {
       .insert([
         {
           date: dateKey,
-          brand_id: newBrandId,
+          brand_id: Number(newBrandId),
           matches_count: Number(newMatchesCount),
           is_booked: false,
         },
       ])
-      .select(`*, brands (name, image_url)`);
+      .select("*");
 
     if (error) {
       alert("Erro ao criar show: " + error.message);
-    } else {
-      setShows([...shows, data[0]]);
+    } else if (data && data.length > 0) {
+      const selectedEvent = brands.find(
+        (b) => String(b.id) === String(newBrandId),
+      );
+      const newShowObj = {
+        ...data[0],
+        events: selectedEvent || null,
+      };
+
+      setShows((prevShows) => [...prevShows, newShowObj]);
       setShowAddModal(false);
     }
   };
@@ -124,7 +148,6 @@ function Calendar() {
     }
   };
 
-  // Helper para reconstruir a estrutura de times a partir do array do banco de dados
   const mapWrestlersToTeams = (type, wrestlerIds = []) => {
     if (type.startsWith("rumble_")) {
       return { participants: wrestlerIds };
@@ -253,7 +276,6 @@ function Calendar() {
     handleOpenBookingModal(show);
   };
 
-  // Funções de LUTAS
   const handleAddMatch = () => {
     setMatchesData([
       ...matchesData,
@@ -297,7 +319,6 @@ function Calendar() {
     setMatchesData(updated);
   };
 
-  // Funções de SEGMENTOS
   const handleAddSegment = () => {
     setSegmentsData([
       ...segmentsData,
@@ -341,7 +362,6 @@ function Calendar() {
     setSegmentsData(updated);
   };
 
-  // Salvar Booking
   const handleSaveBooking = async () => {
     if (!activeShow) return;
 
@@ -423,8 +443,6 @@ function Calendar() {
     }
   };
 
-  // No Calendar.jsx
-
   const handleOpenViewModal = async (show) => {
     setActiveShow(show);
 
@@ -442,7 +460,6 @@ function Calendar() {
     ]);
 
     if (matchesRes.data) {
-      // Formata as lutas vindas do Supabase reconstruindo a estrutura de times
       const formattedMatches = matchesRes.data.map((m) => {
         const matchType = m.match_type || "1v1";
         const teamStructure = mapWrestlersToTeams(
@@ -514,10 +531,14 @@ function Calendar() {
 
                 {dayShow ? (
                   <div className={styles.showContent}>
-                    {dayShow.brands?.image_url && (
+                    {dayShow.events?.image_url && (
                       <img
-                        src={dayShow.brands.image_url}
-                        alt={dayShow.brands.name}
+                        src={dayShow.events.image_url}
+                        alt={
+                          dayShow.events.event_name ||
+                          dayShow.events.name ||
+                          "Event"
+                        }
                         className={styles.brandIcon}
                       />
                     )}
