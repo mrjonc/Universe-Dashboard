@@ -1,5 +1,6 @@
 import React from "react";
-import styles from "./calendar.module.css";
+// import styles from "./calendar.module.css";
+import styles from "./CalendarModal.module.css";
 
 export default function BookingModal({
   activeShow,

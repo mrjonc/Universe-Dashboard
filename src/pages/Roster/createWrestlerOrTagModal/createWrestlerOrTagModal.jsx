@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../../lib/supabaseClient.js";
+import { supabase } from "../../../lib/supabaseClient.js";
+import styles from "./createWrestlerOrTagModal.module.css";
 
 export default function CreateWrestlerOrTagModal({
   brands = [],
@@ -130,158 +131,65 @@ export default function CreateWrestlerOrTagModal({
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        backgroundColor: "rgba(0, 0, 0, 0.75)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: "#191919",
-          padding: "2rem",
-          borderRadius: "8px",
-          width: "400px",
-          maxHeight: "90vh",
-          overflowY: "auto",
-          color: "#fff",
-          border: "1px solid #333",
-        }}
-      >
-        <h3 style={{ marginTop: 0, textAlign: "center" }}>
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
+        <h3 className={styles.title}>
           {isEditing
             ? `Editar ${type === "wrestler" ? "Superstar" : "Tag Team"}`
-            : "Criar Novo"}
+            : "Create"}
         </h3>
 
         {!isEditing && (
-          <div
-            style={{
-              display: "flex",
-              gap: "0.5rem",
-              marginBottom: "1rem",
-            }}
-          >
+          <div className={styles.typeSelector}>
             <button
               type="button"
               onClick={() => setType("wrestler")}
-              style={{
-                flex: 1,
-                padding: "0.5rem",
-                backgroundColor: type === "wrestler" ? "#d7182a" : "#333",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
+              className={`${styles.typeButton} ${
+                type === "wrestler" ? styles.typeButtonActive : ""
+              }`}
             >
               Superstar
             </button>
             <button
               type="button"
               onClick={() => setType("tagteam")}
-              style={{
-                flex: 1,
-                padding: "0.5rem",
-                backgroundColor: type === "tagteam" ? "#d7182a" : "#333",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
+              className={`${styles.typeButton} ${
+                type === "tagteam" ? styles.typeButtonActive : ""
+              }`}
             >
               Tag Team
             </button>
           </div>
         )}
 
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-        >
+        <form onSubmit={handleSubmit} className={styles.form}>
           <div>
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.85rem",
-                marginBottom: "0.25rem",
-              }}
-            >
-              Nome
-            </label>
+            <label className={styles.label}>Name</label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #444",
-                backgroundColor: "#2a2a2a",
-                color: "#fff",
-                boxSizing: "border-box",
-              }}
+              className={styles.input}
             />
           </div>
 
           <div>
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.85rem",
-                marginBottom: "0.25rem",
-              }}
-            >
-              URL da Imagem
-            </label>
+            <label className={styles.label}>Image URL</label>
             <input
               type="text"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #444",
-                backgroundColor: "#2a2a2a",
-                color: "#fff",
-                boxSizing: "border-box",
-              }}
+              className={styles.input}
             />
           </div>
 
           <div>
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.85rem",
-                marginBottom: "0.25rem",
-              }}
-            >
-              Brand
-            </label>
+            <label className={styles.label}>Brand</label>
             <select
               value={brandId}
               onChange={(e) => setBrandId(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #444",
-                backgroundColor: "#2a2a2a",
-                color: "#fff",
-                boxSizing: "border-box",
-              }}
+              className={styles.select}
             >
               <option value="">-- Free Agent --</option>
               {brands.map((brand) => (
@@ -295,38 +203,20 @@ export default function CreateWrestlerOrTagModal({
           {type === "tagteam" && (
             <div>
               <label
-                style={{
-                  display: "block",
-                  fontSize: "0.85rem",
-                  marginBottom: "0.5rem",
-                }}
+                className={styles.label}
+                style={{ marginBottom: "0.5rem" }}
               >
-                Membros da Tag/Stable
+                Tag/Stable Members
               </label>
 
               {selectedMembers.map((memberId, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    display: "flex",
-                    gap: "0.5rem",
-                    marginBottom: "0.5rem",
-                  }}
-                >
+                <div key={idx} className={styles.memberRow}>
                   <select
                     value={memberId}
                     onChange={(e) => handleMemberChange(idx, e.target.value)}
-                    style={{
-                      flex: 1,
-                      padding: "0.5rem",
-                      borderRadius: "4px",
-                      border: "1px solid #444",
-                      backgroundColor: "#2a2a2a",
-                      color: "#fff",
-                      boxSizing: "border-box",
-                    }}
+                    className={styles.select}
                   >
-                    <option value="">(Selecione um Lutador)</option>
+                    <option value="">(Select A Wrestler)</option>
                     {wrestlers.map((wrestler) => (
                       <option key={wrestler.id} value={wrestler.id}>
                         {wrestler.name}
@@ -338,14 +228,7 @@ export default function CreateWrestlerOrTagModal({
                     <button
                       type="button"
                       onClick={() => handleRemoveMemberSlot(idx)}
-                      style={{
-                        padding: "0.5rem 0.75rem",
-                        backgroundColor: "#d7182a",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
+                      className={styles.removeMemberButton}
                     >
                       X
                     </button>
@@ -356,55 +239,28 @@ export default function CreateWrestlerOrTagModal({
               <button
                 type="button"
                 onClick={handleAddMemberSlot}
-                style={{
-                  width: "100%",
-                  padding: "0.4rem",
-                  backgroundColor: "#333",
-                  color: "#fff",
-                  border: "1px dashed #666",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "0.8rem",
-                  marginTop: "0.25rem",
-                }}
+                className={styles.addMemberButton}
               >
-                + Adicionar Membro
+                + Add A Member
               </button>
             </div>
           )}
 
-          <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
+          <div className={styles.actionButtons}>
             <button
               type="submit"
               disabled={loading}
-              style={{
-                flex: 1,
-                padding: "0.6rem",
-                backgroundColor: "#2563eb",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-              }}
+              className={styles.submitButton}
             >
-              {loading ? "Salvando..." : isEditing ? "Atualizar" : "Criar"}
+              {loading ? "Saving..." : isEditing ? "Atualizar" : "Create"}
             </button>
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              style={{
-                flex: 1,
-                padding: "0.6rem",
-                backgroundColor: "#444",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
+              className={styles.cancelButton}
             >
-              Cancelar
+              Cancel
             </button>
           </div>
         </form>

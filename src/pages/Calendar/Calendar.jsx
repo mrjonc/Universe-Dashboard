@@ -5,48 +5,52 @@ import { DAYS_IN_MONTH, MONTHS, WEEK_DAYS } from "./calendarConstants";
 import { TiPlus } from "react-icons/ti";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 
-import AddShowModal from "./addShowModal.jsx";
-import ViewCardModal from "./viewCardModal.jsx";
-import BookingModal from "./bookingModal.jsx";
+import AddShowModal from "../../components/modals/addShowModal.jsx";
+import ViewCardModal from "../../components/modals/viewCardModal.jsx";
+import BookingModal from "../../components/modals/bookingModal.jsx";
 import LoadingSpinner from "../../components/animations/LoadingSpinner.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 function Calendar() {
   const daysArray = Array.from({ length: DAYS_IN_MONTH }, (_, i) => i + 1);
+  const { user } = useAuth();
 
-  // Mês e ano
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
   const [currentYear, setCurrentYear] = useState(2026);
   const [selectedDay, setSelectedDay] = useState(null);
 
-  // Supabase
   const [shows, setShows] = useState([]);
   const [brands, setBrands] = useState([]);
   const [wrestlers, setWrestlers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Modais
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [activeShow, setActiveShow] = useState(null);
 
-  // Formulário Add Show
   const [newBrandId, setNewBrandId] = useState("");
   const [newMatchesCount, setNewMatchesCount] = useState(3);
 
-  // Lutas e Segmentos
   const [matchesData, setMatchesData] = useState([]);
   const [segmentsData, setSegmentsData] = useState([]);
 
   useEffect(() => {
     fetchInitialData();
-  }, []);
+  }, [user]);
+
+  const formatDateKey = (year, monthIdx, day) => {
+    const formattedMonth = String(monthIdx + 1).padStart(2, "0");
+    const formattedDay = String(day).padStart(2, "0");
+    return `${year}-${formattedMonth}-${formattedDay}`;
+  };
 
   async function fetchInitialData() {
+    if (!user) return;
     setLoading(true);
 
     const [showsRes, eventsRes, superstarsRes] = await Promise.all([
-      supabase.from("shows").select("*"),
+      supabase.from("shows").select("*").eq("user_id", user.id),
       supabase.from("events").select("*"),
       supabase.from("superstars").select("*"),
     ]);
@@ -106,19 +110,24 @@ function Calendar() {
     setShowAddModal(true);
   };
 
-  const handleCreateShow = async () => {
-    if (!selectedDay || !newBrandId) return;
+  const handleCreateShow = async (showPayload) => {
+    const targetBrandId = showPayload?.brandId || newBrandId || brands[0]?.id;
+    const targetMatches = showPayload?.matchesCount || newMatchesCount || 1;
+    const targetDay = showPayload?.day || selectedDay;
 
-    const dateKey = `${currentYear}-${currentMonthIndex + 1}-${selectedDay}`;
+    if (!targetDay || !targetBrandId || !user) return;
+
+    const dateKey = formatDateKey(currentYear, currentMonthIndex, targetDay);
 
     const { data, error } = await supabase
       .from("shows")
       .insert([
         {
           date: dateKey,
-          brand_id: Number(newBrandId),
-          matches_count: Number(newMatchesCount),
+          brand_id: Number(targetBrandId),
+          matches_count: Number(targetMatches),
           is_booked: false,
+          user_id: user.id,
         },
       ])
       .select("*");
@@ -127,7 +136,7 @@ function Calendar() {
       alert("Erro ao criar show: " + error.message);
     } else if (data && data.length > 0) {
       const selectedEvent = brands.find(
-        (b) => String(b.id) === String(newBrandId),
+        (b) => String(b.id) === String(targetBrandId),
       );
       const newShowObj = {
         ...data[0],
@@ -388,6 +397,7 @@ function Calendar() {
         stipulation: m.stipulation || "",
         match_type: m.match_type || "1v1",
         wrestler_ids: allWrestlerIds.filter(Boolean),
+        user_id: user.id,
       };
     });
 
@@ -397,6 +407,7 @@ function Calendar() {
       title: s.title || "Segmento",
       description: s.description || "",
       wrestler_ids: s.selected_wrestlers.filter(Boolean),
+      user_id: user.id,
     }));
 
     if (matchesPayload.length > 0) {
@@ -485,9 +496,9 @@ function Calendar() {
 
   if (loading)
     return (
-      <p style={{ textAlign: "center", padding: "2rem", color: "white" }}>
+      <div style={{ textAlign: "center", padding: "2rem", color: "white" }}>
         <LoadingSpinner />
-      </p>
+      </div>
     );
 
   return (
@@ -516,18 +527,36 @@ function Calendar() {
         <div className={styles.calendarDays}>
           {daysArray.map((dayNumber) => {
             const isSelected = selectedDay === dayNumber;
-            const dateKey = `${currentYear}-${currentMonthIndex + 1}-${dayNumber}`;
+            const dateKey = formatDateKey(
+              currentYear,
+              currentMonthIndex,
+              dayNumber,
+            );
             const dayShow = shows.find((s) => s.date === dateKey);
 
             return (
               <div
                 key={dayNumber}
-                className={`${styles.dayCell} ${
+                className={`${styles.dayCell} ${dayShow ? styles.hasShow : ""} ${
                   isSelected ? styles.selected : ""
                 }`}
                 onClick={() => setSelectedDay(dayNumber)}
               >
-                <span>{dayNumber}</span>
+                <div className={styles.dayHeader}>
+                  <span className={styles.dayNumber}>{dayNumber}</span>
+                  {dayShow && (
+                    <button
+                      className={styles.deleteCardBtn}
+                      title="Excluir Show"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteShow(dayShow.id);
+                      }}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
 
                 {dayShow ? (
                   <div className={styles.showContent}>
@@ -543,10 +572,12 @@ function Calendar() {
                       />
                     )}
 
-                    <small>Lutas: {dayShow.matches_count}</small>
+                    <small className={styles.matchesCount}>
+                      {dayShow.matches_count} LUTAS
+                    </small>
 
                     {dayShow.is_booked ? (
-                      <div style={{ display: "flex", gap: "4px" }}>
+                      <div className={styles.actionGroup}>
                         <button
                           className={styles.actionBtn}
                           onClick={(e) => {
@@ -557,13 +588,13 @@ function Calendar() {
                           Exibition
                         </button>
                         <button
-                          className={styles.actionBtn}
+                          className={`${styles.actionBtn} ${styles.editBtn}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleOpenBookingModal(dayShow);
                           }}
                         >
-                          Edit Book
+                          Edit
                         </button>
                       </div>
                     ) : (
@@ -577,22 +608,12 @@ function Calendar() {
                         Bookar
                       </button>
                     )}
-
-                    <div className={styles.showControls}>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteShow(dayShow.id);
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </div>
                   </div>
                 ) : (
                   <button
                     className={styles.addShow}
                     onClick={() => handleOpenAddModal(dayNumber)}
+                    title="Adicionar Show"
                   >
                     <TiPlus />
                   </button>

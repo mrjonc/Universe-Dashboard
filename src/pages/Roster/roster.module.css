@@ -1,0 +1,169 @@
+.container {
+  padding: 2rem 1rem;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  color: #fff;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  font-size: 2.5rem;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 0 15px rgba(229, 25, 45, 0.6);
+}
+
+/* ===================================
+   Abas e Botões Superiores
+   =================================== */
+.tabsContainer {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.tabButton {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border-radius: 6px;
+  background-color: #120e0f;
+  color: #aaa;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+}
+
+.tabButton:hover {
+  background-color: #1d191a;
+  color: #fff;
+  border-color: rgba(215, 24, 42, 0.5);
+}
+
+.tabButtonActive {
+  background: #d7182a;
+  color: #fff;
+  border-color: #d7182a;
+  box-shadow: 0 0 12px rgba(215, 24, 42, 0.4);
+}
+
+.addButton {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border-radius: 6px;
+  border: none;
+  background: #d7182a;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(215, 24, 42, 0.3);
+  transition: all 0.2s ease;
+}
+
+.addButton:hover {
+  background: #b51221;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(215, 24, 42, 0.5);
+}
+
+/* ===================================
+   Estrutura das Seções e Cabeçalhos
+   =================================== */
+.section {
+  margin-bottom: 3.5rem;
+}
+
+.brandHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.8rem;
+  margin-bottom: 2rem;
+  position: relative;
+  flex-wrap: wrap;
+}
+
+.brandHeader::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  width: 120px;
+  height: 2px;
+  background: #d7182a;
+  box-shadow: 0 0 8px #d7182a;
+}
+
+.brandHeaderTitle {
+  text-transform: uppercase;
+  margin: 0;
+  font-size: 1.6rem;
+  color: #fff;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.freeAgentTitle {
+  text-transform: uppercase;
+  margin: 0;
+  color: #aaa;
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.brandLogo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.8));
+}
+
+/* ===================================
+   Grid de Cards
+   =================================== */
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.8rem;
+  justify-content: center;
+  width: 100%;
+}
+
+.loadingContainer {
+  text-align: center;
+  padding: 2rem;
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 1rem 0.5rem;
+  }
+
+  .title {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .grid {
+    gap: 1rem;
+  }
+
+  .brandHeaderTitle,
+  .freeAgentTitle {
+    font-size: 1.2rem;
+  }
+}

@@ -1,0 +1,291 @@
+.container {
+  padding: 2rem 1rem;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  color: #fff;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  font-size: 2.5rem;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 0 15px rgba(229, 25, 45, 0.6);
+}
+
+/* ===================================
+   Estrutura das Seções e Cabeçalhos
+   =================================== */
+.section {
+  margin-bottom: 3.5rem;
+}
+
+.brandHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.8rem;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.brandHeader::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  width: 120px;
+  height: 2px;
+  background: #d7182a;
+  box-shadow: 0 0 8px #d7182a;
+}
+
+.brandHeaderTitle {
+  text-transform: uppercase;
+  margin: 0;
+  font-size: 1.6rem;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.brandLogo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.8));
+}
+
+.interbrandTitle {
+  text-transform: uppercase;
+  margin: 0;
+  color: #aaa;
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+}
+
+/* ===================================
+   Grid e Cards dos Campeonatos
+   =================================== */
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.8rem;
+  justify-content: center;
+  width: 100%;
+}
+
+.card {
+  background: linear-gradient(145deg, #1d191a, #120e0f);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  width: 270px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7);
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+  position: relative;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(215, 24, 42, 0.5);
+  box-shadow:
+    0 12px 25px rgba(0, 0, 0, 0.9),
+    0 0 15px rgba(215, 24, 42, 0.2);
+}
+
+.cardContent {
+  padding: 1.2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Imagem do Cinturão */
+.titleImageContainer {
+  height: 110px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.8rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+  transition: transform 0.3s ease;
+}
+
+.card:hover .titleImageContainer {
+  transform: scale(1.05);
+}
+
+.titleImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.titleName {
+  font-size: 1.15rem;
+  margin: 0 0 0.5rem 0;
+  color: #fff;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.brandBadge {
+  display: inline-block;
+  margin-top: 0.2rem;
+}
+
+.brandImage {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+.divider {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  width: 100%;
+  margin: 1rem 0;
+}
+
+/* ===================================
+   Seção do Campeão Atual
+   =================================== */
+.championSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  width: 100%;
+}
+
+.championImage {
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 0.6rem;
+  border: 2px solid #ffd700; /* Borda dourada de campeão */
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.35);
+  transition: transform 0.3s ease;
+}
+
+.card:hover .championImage {
+  transform: scale(1.03);
+}
+
+.championName {
+  font-weight: bold;
+  font-size: 1.05rem;
+  margin: 0;
+  color: #fff;
+  text-transform: uppercase;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.vacantText {
+  color: #777;
+  font-style: italic;
+  font-family: sans-serif;
+  font-size: 0.9rem;
+  margin: 0;
+  letter-spacing: 0;
+}
+
+/* ===================================
+   Botões de Ação
+   =================================== */
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: #0c090a;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.changeButton,
+.vacateButton {
+  padding: 0.55rem;
+  border: none;
+  border-radius: 6px;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.changeButton {
+  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+
+.changeButton:hover {
+  background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.5);
+}
+
+.vacateButton {
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  color: #ef4444;
+}
+
+.vacateButton:hover {
+  background: #dc2626;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.4);
+}
+
+/* ===================================
+   Responsividade Mobile
+   =================================== */
+@media (max-width: 600px) {
+  .container {
+    padding: 1rem 0.5rem;
+  }
+
+  .title {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .grid {
+    gap: 1rem;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .brandHeaderTitle,
+  .interbrandTitle {
+    font-size: 1.2rem;
+  }
+}

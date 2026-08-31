@@ -10,11 +10,14 @@
   align-items: center;
   background-color: rgb(56, 53, 53);
   height: 70px;
+  padding: 0 1rem;
+  position: relative;
 }
 
 .btn {
   display: flex;
   gap: 1rem;
+  align-items: center;
 }
 
 .btn a {
@@ -23,11 +26,80 @@
   background: none;
   border: none;
   color: #d7182a;
-  /* font-weight: bolder; */
   text-decoration: none;
+  font-weight: bold;
 }
 
 .btn a:hover {
   background-color: rgb(65, 61, 61);
   border-radius: 1rem;
+}
+
+.logoutBtn {
+  background-color: #dc2626;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.logoutBtn:hover {
+  background-color: #b91c1c;
+}
+
+/* Escondido no Desktop */
+.menuToggle {
+  display: none;
+  background: none;
+  border: none;
+  color: #d7182a;
+  font-size: 1.8rem;
+  cursor: pointer;
+}
+
+/* ===================================
+   RESPONSIVIDADE MOBILE (Menu Sanduíche)
+   =================================== */
+@media (max-width: 768px) {
+  .navbar {
+    justify-content: space-between;
+  }
+
+  .menuToggle {
+    display: block;
+  }
+
+  /* O container de botões vira um menu suspenso */
+  .btn {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    background-color: rgb(40, 38, 38);
+    padding: 1rem;
+    gap: 0.5rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+  }
+
+  /* Classe para abrir o menu via JS */
+  .btn.active {
+    display: flex;
+  }
+
+  .btn a {
+    width: 100%;
+    text-align: center;
+    padding: 0.75rem;
+  }
+
+  .logoutBtn {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
 }

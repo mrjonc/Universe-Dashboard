@@ -1,0 +1,116 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: rgb(56, 53, 53);
+  color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  width: 90%;
+  max-width: 550px;
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  border: 1px solid #444;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.modalContent h3,
+.modalContent h4,
+.modalContent h5 {
+  margin: 0;
+  color: #ffffff;
+}
+
+/* Estilização para Inputs, Selects e Textareas nos Modais */
+.modalContent input,
+.modalContent select,
+.modalContent textarea {
+  background-color: #2a2a2a;
+  color: #ffffff;
+  border: 1px solid #444;
+  border-radius: 0.25rem;
+  padding: 0.4rem 0.6rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.modalContent input:focus,
+.modalContent select:focus,
+.modalContent textarea:focus {
+  border-color: #d7182a;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.modalActions button {
+  background-color: #d7182a;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  padding: 0.6rem 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.modalActions button:hover {
+  background-color: rgb(19, 13, 13);
+}
+
+.matchBox {
+  border: 1px solid #444;
+  background-color: #2a2a2a;
+  padding: 0.75rem;
+  border-radius: 0.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.matchBox button {
+  padding: 0.4rem 0.8rem;
+  color: white;
+  background-color: #d7182a;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.matchBox button:hover {
+  background-color: rgb(19, 13, 13);
+}
+
+.addShow {
+  padding: 0.6rem;
+  color: white;
+  background-color: #d7182a;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.addShow:hover {
+  background-color: rgb(19, 13, 13);
+}

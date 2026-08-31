@@ -2,10 +2,11 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "../../lib/supabaseClient.js";
 import { getTagTeams } from "../../lib/tagTeamService.js";
 import { sortBrands, groupItemsByBrand } from "../../utils/rosterHelpers.js";
-import WrestlerCard from "../../components/rosterComponents/WrestlerCard.jsx";
-import TagTeamCard from "../../components/rosterComponents/TagTeamCard.jsx";
-import CreateWrestlerOrTagModal from "./createWrestlerOrTagModal.jsx";
+import WrestlerCard from "./wrestlerCard/WrestlerCard.jsx";
+import TagTeamCard from "./tagTeamCard/TagTeamCard.jsx";
+import CreateWrestlerOrTagModal from "./createWrestlerOrTagModal/createWrestlerOrTagModal.jsx";
 import LoadingSpinner from "../../components/animations/LoadingSpinner.jsx";
+import styles from "./roster.module.css";
 
 export default function Roster() {
   const [activeTab, setActiveTab] = useState("superstars");
@@ -46,7 +47,6 @@ export default function Roster() {
   }, []);
 
   const handleEditWrestler = useCallback((wrestler) => {
-    console.log("Editando wrestler:", wrestler);
     setItemToEdit({ type: "wrestler", data: wrestler });
     setIsModalOpen(true);
   }, []);
@@ -97,9 +97,9 @@ export default function Roster() {
 
   if (loading) {
     return (
-      <p style={{ textAlign: "center", padding: "2rem", color: "white" }}>
+      <div className={styles.loadingContainer}>
         <LoadingSpinner />
-      </p>
+      </div>
     );
   }
 
@@ -120,54 +120,24 @@ export default function Roster() {
   const freeAgentTeams = tagTeams.filter((t) => !t.brand?.id && !t.brand_id);
 
   return (
-    <div
-      style={{
-        padding: "2rem",
-        width: "100%",
-        boxSizing: "border-box",
-        color: "white",
-      }}
-    >
-      <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>ROSTER</h2>
+    <div className={styles.container}>
+      <h2 className={styles.title}>ROSTER</h2>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: "1rem",
-          marginBottom: "2.5rem",
-        }}
-      >
+      <div className={styles.tabsContainer}>
         <button
           onClick={() => setActiveTab("superstars")}
-          style={{
-            padding: "0.6rem 1.2rem",
-            fontSize: "1rem",
-            fontWeight: "bold",
-            cursor: "pointer",
-            borderRadius: "6px",
-            border: "none",
-            backgroundColor: activeTab === "superstars" ? "#e0e0e0" : "#111",
-            color: activeTab === "superstars" ? "#333" : "#fff",
-            transition: "all 0.2s ease",
-          }}
+          className={`${styles.tabButton} ${
+            activeTab === "superstars" ? styles.tabButtonActive : ""
+          }`}
         >
           SUPERSTARS
         </button>
 
         <button
           onClick={() => setActiveTab("tagteams")}
-          style={{
-            padding: "0.6rem 1.2rem",
-            fontSize: "1rem",
-            fontWeight: "bold",
-            cursor: "pointer",
-            borderRadius: "6px",
-            border: "none",
-            backgroundColor: activeTab === "tagteams" ? "#e0e0e0" : "#111",
-            color: activeTab === "tagteams" ? "#333" : "#fff",
-            transition: "all 0.2s ease",
-          }}
+          className={`${styles.tabButton} ${
+            activeTab === "tagteams" ? styles.tabButtonActive : ""
+          }`}
         >
           TAG TEAMS
         </button>
@@ -177,17 +147,7 @@ export default function Roster() {
             setItemToEdit(null);
             setIsModalOpen(true);
           }}
-          style={{
-            padding: "0.6rem 1.2rem",
-            fontSize: "1rem",
-            fontWeight: "bold",
-            cursor: "pointer",
-            borderRadius: "6px",
-            border: "none",
-            backgroundColor: "#d7182a",
-            color: "#ece9e9",
-            transition: "all 0.2s ease",
-          }}
+          className={styles.addButton}
         >
           +
         </button>
@@ -200,43 +160,21 @@ export default function Roster() {
             if (!group || group.items.length === 0) return null;
 
             return (
-              <div key={brand.id} style={{ marginBottom: "3rem" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "1rem",
-                    borderBottom: "2px solid #ccc",
-                    paddingBottom: "0.5rem",
-                    marginBottom: "1.5rem",
-                  }}
-                >
+              <div key={brand.id} className={styles.section}>
+                <div className={styles.brandHeader}>
                   {brand.image_url && (
                     <img
                       src={brand.image_url}
                       alt={brand.name}
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        objectFit: "contain",
-                      }}
+                      className={styles.brandLogo}
                     />
                   )}
-                  <h3 style={{ textTransform: "uppercase", margin: 0 }}>
+                  <h3 className={styles.brandHeaderTitle}>
                     {brand.name} ({group.items.length})
                   </h3>
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "1.5rem",
-                    justifyContent: "center",
-                    width: "100%",
-                  }}
-                >
+                <div className={styles.grid}>
                   {group.items.map((wrestler) => (
                     <WrestlerCard
                       key={wrestler.id}
@@ -253,35 +191,14 @@ export default function Roster() {
           })}
 
           {freeAgents.length > 0 && (
-            <div style={{ marginBottom: "3rem" }}>
-              <div
-                style={{
-                  borderBottom: "2px solid #ccc",
-                  paddingBottom: "0.5rem",
-                  marginBottom: "1.5rem",
-                  textAlign: "center",
-                }}
-              >
-                <h3
-                  style={{
-                    textTransform: "uppercase",
-                    margin: 0,
-                    color: "#666",
-                  }}
-                >
+            <div className={styles.section}>
+              <div className={styles.brandHeader}>
+                <h3 className={styles.freeAgentTitle}>
                   Free Agents ({freeAgents.length})
                 </h3>
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "1.5rem",
-                  justifyContent: "center",
-                  width: "100%",
-                }}
-              >
+              <div className={styles.grid}>
                 {freeAgents.map((wrestler) => (
                   <WrestlerCard
                     key={wrestler.id}
@@ -305,43 +222,21 @@ export default function Roster() {
             if (!group || group.items.length === 0) return null;
 
             return (
-              <div key={brand.id} style={{ marginBottom: "3rem" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "1rem",
-                    borderBottom: "2px solid #ccc",
-                    paddingBottom: "0.5rem",
-                    marginBottom: "1.5rem",
-                  }}
-                >
+              <div key={brand.id} className={styles.section}>
+                <div className={styles.brandHeader}>
                   {brand.image_url && (
                     <img
                       src={brand.image_url}
                       alt={brand.name}
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        objectFit: "contain",
-                      }}
+                      className={styles.brandLogo}
                     />
                   )}
-                  <h3 style={{ textTransform: "uppercase", margin: 0 }}>
+                  <h3 className={styles.brandHeaderTitle}>
                     {brand.name} ({group.items.length})
                   </h3>
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "1.5rem",
-                    justifyContent: "center",
-                    width: "100%",
-                  }}
-                >
+                <div className={styles.grid}>
                   {group.items.map((team) => (
                     <TagTeamCard
                       key={team.id}
@@ -358,35 +253,14 @@ export default function Roster() {
           })}
 
           {freeAgentTeams.length > 0 && (
-            <div style={{ marginBottom: "3rem" }}>
-              <div
-                style={{
-                  borderBottom: "2px solid #ccc",
-                  paddingBottom: "0.5rem",
-                  marginBottom: "1.5rem",
-                  textAlign: "center",
-                }}
-              >
-                <h3
-                  style={{
-                    textTransform: "uppercase",
-                    margin: 0,
-                    color: "#666",
-                  }}
-                >
+            <div className={styles.section}>
+              <div className={styles.brandHeader}>
+                <h3 className={styles.freeAgentTitle}>
                   Free Agents ({freeAgentTeams.length})
                 </h3>
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "1.5rem",
-                  justifyContent: "center",
-                  width: "100%",
-                }}
-              >
+              <div className={styles.grid}>
                 {freeAgentTeams.map((team) => (
                   <TagTeamCard
                     key={team.id}
