@@ -17,8 +17,9 @@ export default function WrestlerCard({
     setUpdating(true);
 
     try {
+      // CORREÇÃO: Apontar para 'user_superstars' usando o id do registro do usuário
       const { error } = await supabase
-        .from("superstars")
+        .from("user_superstars")
         .update({ brand_id: newBrandId })
         .eq("id", wrestler.id);
 
@@ -43,25 +44,22 @@ export default function WrestlerCard({
 
   const currentBrandId = wrestler.brand_id || wrestler.brands?.id || "";
 
-  const handleDeleteWrestler = async (wrestlerId) => {
-    if (!confirm("Tem certeza que deseja apagar este lutador?")) return;
+  const handleDeleteWrestler = async (wrestlerRecordId) => {
+    if (!confirm("Tem certeza que deseja apagar este lutador do seu roster?"))
+      return;
 
     try {
-      await supabase
-        .from("tag_team_members")
-        .delete()
-        .eq("superstar_id", wrestlerId);
-
+      // CORREÇÃO: Deleta diretamente da tabela do usuário (user_superstars)
       const { error } = await supabase
-        .from("superstars")
+        .from("user_superstars")
         .delete()
-        .eq("id", wrestlerId);
+        .eq("id", wrestlerRecordId);
 
       if (error) {
         alert("Erro ao excluir: " + error.message);
         console.error(error);
       } else {
-        if (onDelete) onDelete(wrestlerId);
+        if (onDelete) onDelete(wrestlerRecordId);
       }
     } catch (err) {
       console.error("Erro ao excluir lutador:", err);
