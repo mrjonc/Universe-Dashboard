@@ -26,7 +26,8 @@ export default function CreateWrestlerOrTagModal({
       setBrandId(itemToEdit.data.brand_id || itemToEdit.data.brand?.id || "");
 
       if (itemToEdit.type === "tagteam") {
-        const memberIds = itemToEdit.data.members?.map((m) => m.id) || [];
+        const memberIds =
+          itemToEdit.data.members?.map((m) => m.id || m.superstar_id) || [];
         setSelectedMembers(memberIds.length > 0 ? memberIds : ["", ""]);
       }
     } else {
@@ -59,7 +60,17 @@ export default function CreateWrestlerOrTagModal({
 
     try {
       if (type === "wrestler") {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+          throw new Error("Usuario não autenticado");
+        }
+
         const payload = {
+          user_id: user.id,
           name,
           image_url: imageUrl || null,
           brand_id: brandId || null,
@@ -67,12 +78,14 @@ export default function CreateWrestlerOrTagModal({
 
         if (isEditing) {
           const { error } = await supabase
-            .from("superstars")
+            .from("user_superstars")
             .update(payload)
             .eq("id", itemToEdit.data.id);
           if (error) throw error;
         } else {
-          const { error } = await supabase.from("superstars").insert([payload]);
+          const { error } = await supabase
+            .from("user_superstars")
+            .insert([payload]);
           if (error) throw error;
         }
       } else {
@@ -109,10 +122,20 @@ export default function CreateWrestlerOrTagModal({
         const validMembers = selectedMembers.filter((id) => id !== "");
 
         if (validMembers.length > 0) {
-          const membersPayload = validMembers.map((wrestlerId) => ({
-            tag_team_id: teamId,
-            superstar_id: wrestlerId,
-          }));
+          const membersPayload = validMembers.map((wrestlerId) => {
+            const foundWrestler = wrestlers.find(
+              (w) =>
+                w.id === wrestlerId ||
+                String(w.superstar_id) === String(wrestlerId),
+            );
+
+            return {
+              tag_team_id: teamId,
+              superstar_id: foundWrestler
+                ? foundWrestler.superstar_id || foundWrestler.id
+                : wrestlerId,
+            };
+          });
 
           const { error: membersError } = await supabase
             .from("tag_team_members")
@@ -217,11 +240,14 @@ export default function CreateWrestlerOrTagModal({
                     className={styles.select}
                   >
                     <option value="">(Select A Wrestler)</option>
-                    {wrestlers.map((wrestler) => (
-                      <option key={wrestler.id} value={wrestler.id}>
-                        {wrestler.name}
-                      </option>
-                    ))}
+                    {wrestlers
+                      .slice()
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((wrestler) => (
+                        <option key={wrestler.id} value={wrestler.id}>
+                          {wrestler.name}
+                        </option>
+                      ))}
                   </select>
 
                   {selectedMembers.length > 1 && (

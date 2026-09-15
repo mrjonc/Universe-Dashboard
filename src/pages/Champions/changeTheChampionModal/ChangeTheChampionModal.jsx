@@ -84,11 +84,14 @@ function EditChampionModal({ title, onClose, onSuccess }) {
               className={styles.selectInput}
             >
               <option value="">-- Select the wrestler --</option>
-              {optionsList.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
+              {optionsList
+                .slice()
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
             </select>
 
             <div className={styles.actionsContainer}>
