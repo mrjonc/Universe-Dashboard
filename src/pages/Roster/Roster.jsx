@@ -87,6 +87,11 @@ export default function Roster() {
         }
       }
 
+      // Ordena alfabeticamente pelo nome antes de salvar no estado
+      if (userSuperstars && userSuperstars.length > 0) {
+        userSuperstars.sort((a, b) => a.name.localeCompare(b.name));
+      }
+
       setWrestlers(userSuperstars || []);
     } catch (err) {
       console.error("Erro ao carregar dados do roster:", err);
@@ -127,14 +132,15 @@ export default function Roster() {
         return;
       }
 
-      // Atualiza no estado local
-      setWrestlers((prev) =>
-        prev.map((w) =>
+      // Atualiza no estado local e mantém em ordem alfabética
+      setWrestlers((prev) => {
+        const updated = prev.map((w) =>
           w.id === wrestlerId
             ? { ...w, brand_id: newBrandId, brands: newBrandObj }
             : w,
-        ),
-      );
+        );
+        return updated.sort((a, b) => a.name.localeCompare(b.name));
+      });
     },
     [],
   );
