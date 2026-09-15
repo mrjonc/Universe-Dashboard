@@ -20,7 +20,6 @@ export default function Roster() {
   const fetchRosterData = async () => {
     setLoading(true);
     try {
-      // 1. Pega o usuário logado atualmente
       const {
         data: { user },
         error: userError,
@@ -31,7 +30,6 @@ export default function Roster() {
         return;
       }
 
-      // 2. Busca as brands e os dados globais de tag teams (você pode ajustar tag_teams para user_tag_teams depois se precisar)
       const [brandsRes, teamsData] = await Promise.all([
         supabase.from("brands").select("*"),
         getTagTeams(),
@@ -43,7 +41,7 @@ export default function Roster() {
 
       setTagTeams(teamsData || []);
 
-      // 3. Busca os lutadores na tabela exclusiva do usuário (`user_superstars`)
+      // 1. Busca os lutadores do usuário
       let { data: userSuperstars, error: userSupErr } = await supabase
         .from("user_superstars")
         .select(`*, brands (id, name, image_url)`)
@@ -53,14 +51,19 @@ export default function Roster() {
         console.error("Erro ao buscar user_superstars:", userSupErr.message);
       }
 
-      // 4. Se o usuário for novo e a tabela dele estiver vazia, fazemos o "Seed" automático copiando do global (`superstars`)
+      // 2. Se estiver vazio, fazemos o seed garantindo que não há duplicidade pelo superstar_id
       if (!userSuperstars || userSuperstars.length === 0) {
         const { data: globalSuperstars, error: globalErr } = await supabase
           .from("superstars")
           .select("*");
 
         if (!globalErr && globalSuperstars && globalSuperstars.length > 0) {
-          const payload = globalSuperstars.map((s) => ({
+          // Mapeia tirando eventuais duplicatas do global por garantia
+          const uniqueGlobal = Array.from(
+            new Map(globalSuperstars.map((s) => [s.id, s])).values(),
+          );
+
+          const payload = uniqueGlobal.map((s) => ({
             user_id: user.id,
             superstar_id: s.id,
             name: s.name,
