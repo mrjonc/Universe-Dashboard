@@ -370,7 +370,9 @@ export default function BookingModal({
         </button>
 
         <div className={styles.modalActions} style={{ marginTop: "20px" }}>
-          <button onClick={onClose}>Cancel</button>
+          <button onClick={onClose} className={styles.btnCancel}>
+            Cancel
+          </button>
           <button onClick={onSave}>Save Card</button>
         </div>
       </div>

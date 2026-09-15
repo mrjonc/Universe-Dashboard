@@ -114,3 +114,11 @@
 .addShow:hover {
   background-color: rgb(19, 13, 13);
 }
+
+.btnCancel {
+  background-color: gray !important;
+}
+
+.btnCancel:hover {
+  background-color: rgb(105, 103, 103) !important;
+}

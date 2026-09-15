@@ -20,21 +20,71 @@ export default function Roster() {
   const fetchRosterData = async () => {
     setLoading(true);
     try {
-      const [wrestlersRes, brandsRes, teamsData] = await Promise.all([
-        supabase.from("superstars").select(`*, brands (id, name, image_url)`),
+      // 1. Pega o usuário logado atualmente
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) {
+        console.error("Usuário não autenticado");
+        setLoading(false);
+        return;
+      }
+
+      // 2. Busca as brands e os dados globais de tag teams (você pode ajustar tag_teams para user_tag_teams depois se precisar)
+      const [brandsRes, teamsData] = await Promise.all([
         supabase.from("brands").select("*"),
         getTagTeams(),
       ]);
-
-      if (wrestlersRes.error)
-        console.error("Erro ao buscar lutadores:", wrestlersRes.error.message);
-      else setWrestlers(wrestlersRes.data || []);
 
       if (brandsRes.error)
         console.error("Erro ao buscar brands:", brandsRes.error.message);
       else setBrands(brandsRes.data || []);
 
       setTagTeams(teamsData || []);
+
+      // 3. Busca os lutadores na tabela exclusiva do usuário (`user_superstars`)
+      let { data: userSuperstars, error: userSupErr } = await supabase
+        .from("user_superstars")
+        .select(`*, brands (id, name, image_url)`)
+        .eq("user_id", user.id);
+
+      if (userSupErr) {
+        console.error("Erro ao buscar user_superstars:", userSupErr.message);
+      }
+
+      // 4. Se o usuário for novo e a tabela dele estiver vazia, fazemos o "Seed" automático copiando do global (`superstars`)
+      if (!userSuperstars || userSuperstars.length === 0) {
+        const { data: globalSuperstars, error: globalErr } = await supabase
+          .from("superstars")
+          .select("*");
+
+        if (!globalErr && globalSuperstars && globalSuperstars.length > 0) {
+          const payload = globalSuperstars.map((s) => ({
+            user_id: user.id,
+            superstar_id: s.id,
+            name: s.name,
+            brand_id: s.brand_id,
+            image_url: s.image_url,
+          }));
+
+          const { data: insertedData, error: insertErr } = await supabase
+            .from("user_superstars")
+            .insert(payload)
+            .select(`*, brands (id, name, image_url)`);
+
+          if (insertErr) {
+            console.error(
+              "Erro ao popular user_superstars:",
+              insertErr.message,
+            );
+          } else {
+            userSuperstars = insertedData;
+          }
+        }
+      }
+
+      setWrestlers(userSuperstars || []);
     } catch (err) {
       console.error("Erro ao carregar dados do roster:", err);
     } finally {
@@ -62,7 +112,19 @@ export default function Roster() {
   };
 
   const handleUpdateWrestlerBrand = useCallback(
-    (wrestlerId, newBrandId, newBrandObj) => {
+    async (wrestlerId, newBrandId, newBrandObj) => {
+      // Atualiza no banco do usuário
+      const { error } = await supabase
+        .from("user_superstars")
+        .update({ brand_id: newBrandId })
+        .eq("id", wrestlerId);
+
+      if (error) {
+        console.error("Erro ao atualizar brand no banco:", error.message);
+        return;
+      }
+
+      // Atualiza no estado local
       setWrestlers((prev) =>
         prev.map((w) =>
           w.id === wrestlerId
@@ -87,7 +149,18 @@ export default function Roster() {
     [],
   );
 
-  const handleDeleteWrestler = useCallback((id) => {
+  const handleDeleteWrestler = useCallback(async (id) => {
+    // Deleta do banco do usuário
+    const { error } = await supabase
+      .from("user_superstars")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Erro ao deletar lutador:", error.message);
+      return;
+    }
+
     setWrestlers((prev) => prev.filter((s) => s.id !== id));
   }, []);
 

@@ -82,7 +82,7 @@ export default function AddShowModal({
         </div>
 
         <div className={styles.modalActions}>
-          <button type="button" onClick={onClose}>
+          <button type="button" onClick={onClose} className={styles.btnCancel}>
             Cancel
           </button>
           <button type="button" onClick={handleCreate}>
