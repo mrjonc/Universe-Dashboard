@@ -35,6 +35,14 @@ function Calendar() {
   const [matchesData, setMatchesData] = useState([]);
   const [segmentsData, setSegmentsData] = useState([]);
 
+  const formatWrestlers = (rosterWrestlers) =>
+    rosterWrestlers
+      .map((wrestler) => ({
+        ...wrestler,
+        id: wrestler.superstar_id || wrestler.id,
+      }))
+      .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
   useEffect(() => {
     fetchInitialData();
   }, [user]);
@@ -49,11 +57,24 @@ function Calendar() {
     if (!user) return;
     setLoading(true);
 
-    const [showsRes, eventsRes, superstarsRes] = await Promise.all([
+    const [showsRes, eventsRes, wrestlersRes] = await Promise.all([
       supabase.from("shows").select("*").eq("user_id", user.id),
       supabase.from("events").select("*"),
-      supabase.from("superstars").select("*"),
+      supabase
+        .from("user_superstars")
+        .select("id, superstar_id, name, image_url")
+        .eq("user_id", user.id),
     ]);
+
+    if (showsRes.error) {
+      console.error("Erro ao buscar shows:", showsRes.error.message);
+    }
+    if (eventsRes.error) {
+      console.error("Erro ao buscar eventos:", eventsRes.error.message);
+    }
+    if (wrestlersRes.error) {
+      console.error("Erro ao buscar lutadores:", wrestlersRes.error.message);
+    }
 
     if (eventsRes.data) {
       setBrands(eventsRes.data);
@@ -73,11 +94,8 @@ function Calendar() {
       setShows(formattedShows);
     }
 
-    if (superstarsRes.data) {
-      const sorted = [...superstarsRes.data].sort((a, b) =>
-        (a.name || "").localeCompare(b.name || ""),
-      );
-      setWrestlers(sorted);
+    if (wrestlersRes.data) {
+      setWrestlers(formatWrestlers(wrestlersRes.data));
     }
 
     setLoading(false);
@@ -193,6 +211,20 @@ function Calendar() {
   };
 
   const handleOpenBookingModal = async (show) => {
+    if (!user) return;
+
+    const { data: rosterWrestlers, error: wrestlersError } = await supabase
+      .from("user_superstars")
+      .select("id, superstar_id, name, image_url")
+      .eq("user_id", user.id);
+
+    if (wrestlersError) {
+      console.error("Erro ao atualizar lutadores do booking:", wrestlersError);
+      alert("Erro ao carregar lutadores: " + wrestlersError.message);
+      return;
+    }
+
+    setWrestlers(formatWrestlers(rosterWrestlers || []));
     setActiveShow(show);
 
     if (show.is_booked) {
@@ -321,7 +353,7 @@ function Calendar() {
     const match = { ...updated[matchIndex] };
     const teamArray = match[teamKey] ? [...match[teamKey]] : [];
 
-    teamArray[wrestlerIndex] = wrestlerId ? Number(wrestlerId) : "";
+    teamArray[wrestlerIndex] = wrestlerId;
     match[teamKey] = teamArray;
     updated[matchIndex] = match;
 
@@ -359,9 +391,7 @@ function Calendar() {
     wrestlerId,
   ) => {
     const updated = [...segmentsData];
-    updated[segmentIndex].selected_wrestlers[wrestlerIndex] = wrestlerId
-      ? Number(wrestlerId)
-      : "";
+    updated[segmentIndex].selected_wrestlers[wrestlerIndex] = wrestlerId;
     setSegmentsData(updated);
   };
 

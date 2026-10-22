@@ -217,7 +217,7 @@ export default function BookingModal({
                               #{wIdx + 1}
                             </span>
                             <select
-                              value={participants[wIdx] || ""}
+                              value={String(participants[wIdx] || "")}
                               onChange={(e) =>
                                 onTeamWrestlerSelect(
                                   idx,
@@ -230,7 +230,7 @@ export default function BookingModal({
                             >
                               <option value="">-- Selecione --</option>
                               {sortedWrestlers.map((w) => (
-                                <option key={w.id} value={w.id}>
+                                <option key={w.id} value={String(w.id)}>
                                   {w.name}
                                 </option>
                               ))}
@@ -267,7 +267,7 @@ export default function BookingModal({
                         {Array.from({ length: team.size }).map((_, wIdx) => (
                           <select
                             key={wIdx}
-                            value={match[team.key]?.[wIdx] || ""}
+                            value={String(match[team.key]?.[wIdx] || "")}
                             onChange={(e) =>
                               onTeamWrestlerSelect(
                                 idx,
@@ -280,7 +280,7 @@ export default function BookingModal({
                           >
                             <option value="">-- Selecione o Lutador --</option>
                             {sortedWrestlers.map((w) => (
-                              <option key={w.id} value={w.id}>
+                              <option key={w.id} value={String(w.id)}>
                                 {w.name}
                               </option>
                             ))}
@@ -341,14 +341,14 @@ export default function BookingModal({
             {seg.selected_wrestlers.map((wId, wIdx) => (
               <select
                 key={wIdx}
-                value={wId || ""}
+                value={String(wId || "")}
                 onChange={(e) =>
                   onSegmentWrestlerSelect(sIdx, wIdx, e.target.value)
                 }
               >
                 <option value="">-- Select the participant --</option>
                 {sortedWrestlers.map((w) => (
-                  <option key={w.id} value={w.id}>
+                  <option key={w.id} value={String(w.id)}>
                     {w.name}
                   </option>
                 ))}
