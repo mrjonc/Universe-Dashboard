@@ -7,14 +7,15 @@ export default function BookingModal({
   activeShow,
   matchesData,
   segmentsData,
+  cardOrder = [],
   wrestlers = [],
   onClose,
   onSave,
-  onAddMatch,
+  onAddCard,
+  onMoveCard,
   onRemoveMatch,
   onMatchChange,
   onTeamWrestlerSelect,
-  onAddSegment,
   onRemoveSegment,
   onSegmentChange,
   onSegmentWrestlerSelect,
@@ -130,247 +131,228 @@ export default function BookingModal({
           {activeShow.events?.name || activeShow.events?.event_name || "Booking"}
         </h3>
 
-        <h4>MATCHES</h4>
-        {matchesData.map((match, idx) => (
-          <div key={idx} className={styles.matchBox}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <h5>Match {idx + 1}</h5>
-              {matchesData.length > 1 && (
-                <button
-                  type="button"
-                  aria-label={`Delete match ${idx + 1}`}
-                  onClick={() => onRemoveMatch(idx)}
-                >
-                  Delete match
-                </button>
-              )}
-            </div>
+        <h4>SHOW CARD ORDER</h4>
+        {cardOrder.map((card, cardIndex) => {
+          const isMatch = card.type === "match";
+          const match = isMatch ? matchesData[card.index] : null;
+          const segment = isMatch ? null : segmentsData[card.index];
+          if (!match && !segment) return null;
 
-            <label htmlFor={`match-${idx}-stipulation`}>Stipulation</label>
-            <input
-              id={`match-${idx}-stipulation`}
-              type="text"
-              value={match.stipulation}
-              onChange={(e) =>
-                onMatchChange(idx, "stipulation", e.target.value)
-              }
-            />
+          const itemNumber = cardOrder
+            .slice(0, cardIndex + 1)
+            .filter((item) => item.type === card.type).length;
+          const matchConfig = match
+            ? getMatchTeams(match.match_type || "1v1")
+            : null;
 
-            <label htmlFor={`match-${idx}-type`}>Match type</label>
-            <select
-              id={`match-${idx}-type`}
-              value={match.match_type || "1v1"}
-              onChange={(e) => onMatchChange(idx, "match_type", e.target.value)}
-              style={{ marginBottom: "10px" }}
-            >
-              <option value="1v1">One-on-One Match</option>
-              <option value="2v2">Tag Team Match</option>
-              <option value="3v3">6-Man Tag Team Match</option>
-              <option value="4v4">8-Man Tag Team Match</option>
-              <option value="1v2">1-on-2 Handicap Match</option>
-              <option value="1v3">1-on-3 Handicap Match</option>
-              <option value="2v3">2-on-3 Handicap Match</option>
-              <option value="1v1v1">Triple Threat Match</option>
-              <option value="2v2v2">Triple Threat Tag Team Match</option>
-              <option value="1v1v1v1">Fatal 4-Way</option>
-              <option value="2v2v2v2">Fatal 4-Way Tag Team Match</option>
-              <option value="1v1v1v1v1">Fatal 5-Way Match</option>
-              <option value="1v1v1v1v1v1">Six Pack Match</option>
-              <optgroup label="ROYAL RUMBLE">
-                <option value="rumble_10">Royal Rumble (10-man)</option>
-                <option value="rumble_20">Royal Rumble (20-man)</option>
-                <option value="rumble_30">Royal Rumble (30-man)</option>
-              </optgroup>
-            </select>
-
-            {(() => {
-              const matchConfig = getMatchTeams(match.match_type || "1v1");
-
-              if (matchConfig.isRumble) {
-                const participants = match.participants || [];
-
-                return (
-                  <div
-                    style={{
-                      marginTop: "10px",
-                      backgroundColor: "#2a2a2a",
-                      padding: "10px",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    <strong id={`match-${idx}-participants-title`}>
-                      Royal Rumble Entries ({matchConfig.size} Wrestlers)
-                    </strong>
-
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "8px",
-                        marginTop: "10px",
-                      }}
+          return (
+            <Fragment key={`${card.type}-${card.index}`}>
+              <div className={styles.matchBox}>
+                <div className={styles.cardItemHeader}>
+                  <h5>{isMatch ? `Match ${itemNumber}` : `Segment ${itemNumber}`}</h5>
+                  <div className={styles.cardItemControls}>
+                    <button
+                      type="button"
+                      aria-label={`Move ${card.type} ${itemNumber} up`}
+                      onClick={() => onMoveCard(cardIndex, -1)}
+                      disabled={cardIndex === 0}
                     >
-                      {Array.from({ length: matchConfig.size }).map(
-                        (_, wIdx) => (
-                          <div
-                            key={wIdx}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "5px",
-                            }}
-                          >
-                            <span
-                              style={{ fontSize: "12px", minWidth: "25px" }}
-                            >
-                              #{wIdx + 1}
-                            </span>
-                            <WrestlerPicker
-                              id={`match-${idx}-participant-${wIdx}`}
-                              label={`Wrestler ${wIdx + 1} in match ${idx + 1}`}
-                              value={String(participants[wIdx] || "")}
-                              wrestlers={sortedWrestlers}
-                              onChange={(wrestlerId) =>
-                                onTeamWrestlerSelect(
-                                  idx,
-                                  "participants",
-                                  wIdx,
-                                  wrestlerId,
-                                )
-                              }
-                            />
-                          </div>
-                        ),
-                      )}
-                    </div>
+                      Move up
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Move ${card.type} ${itemNumber} down`}
+                      onClick={() => onMoveCard(cardIndex, 1)}
+                      disabled={cardIndex === cardOrder.length - 1}
+                    >
+                      Move down
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Delete ${card.type} ${itemNumber}`}
+                      onClick={() =>
+                        isMatch
+                          ? onRemoveMatch(card.index)
+                          : onRemoveSegment(card.index)
+                      }
+                      disabled={isMatch && matchesData.length === 1}
+                    >
+                      Delete
+                    </button>
                   </div>
-                );
-              }
+                </div>
 
-              return (
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "15px",
-                    marginTop: "10px",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  {matchConfig.map((team, tIdx) => (
-                    <Fragment key={team.key}>
-                      <div
-                        style={{
-                          flex: 1,
-                          minWidth: "150px",
-                          backgroundColor: "#2a2a2a",
-                          padding: "8px",
-                          borderRadius: "4px",
-                        }}
-                      >
-                        <strong>{team.label}</strong>
-                        {Array.from({ length: team.size }).map((_, wIdx) => (
-                          <WrestlerPicker
-                            id={`match-${idx}-${team.key}-wrestler-${wIdx}`}
-                            label={`${team.label}, wrestler ${wIdx + 1}, match ${idx + 1}`}
-                            key={wIdx}
-                            value={String(match[team.key]?.[wIdx] || "")}
-                            wrestlers={sortedWrestlers}
-                            onChange={(wrestlerId) =>
-                              onTeamWrestlerSelect(
-                                idx,
-                                team.key,
-                                wIdx,
-                                wrestlerId,
-                              )
-                            }
-                          />
+                {match && (
+                  <>
+                    <label htmlFor={`match-${card.index}-stipulation`}>Stipulation</label>
+                    <input
+                      id={`match-${card.index}-stipulation`}
+                      type="text"
+                      value={match.stipulation}
+                      onChange={(event) =>
+                        onMatchChange(card.index, "stipulation", event.target.value)
+                      }
+                    />
+
+                    <label htmlFor={`match-${card.index}-type`}>Match type</label>
+                    <select
+                      id={`match-${card.index}-type`}
+                      value={match.match_type || "1v1"}
+                      onChange={(event) =>
+                        onMatchChange(card.index, "match_type", event.target.value)
+                      }
+                    >
+                      <option value="1v1">One-on-One Match</option>
+                      <option value="2v2">Tag Team Match</option>
+                      <option value="3v3">6-Man Tag Team Match</option>
+                      <option value="4v4">8-Man Tag Team Match</option>
+                      <option value="1v2">1-on-2 Handicap Match</option>
+                      <option value="1v3">1-on-3 Handicap Match</option>
+                      <option value="2v3">2-on-3 Handicap Match</option>
+                      <option value="1v1v1">Triple Threat Match</option>
+                      <option value="2v2v2">Triple Threat Tag Team Match</option>
+                      <option value="1v1v1v1">Fatal 4-Way</option>
+                      <option value="2v2v2v2">Fatal 4-Way Tag Team Match</option>
+                      <option value="1v1v1v1v1">Fatal 5-Way Match</option>
+                      <option value="1v1v1v1v1v1">Six Pack Match</option>
+                      <optgroup label="ROYAL RUMBLE">
+                        <option value="rumble_10">Royal Rumble (10-man)</option>
+                        <option value="rumble_20">Royal Rumble (20-man)</option>
+                        <option value="rumble_30">Royal Rumble (30-man)</option>
+                      </optgroup>
+                    </select>
+
+                    {matchConfig.isRumble ? (
+                      <div className={styles.rumbleParticipants}>
+                        <strong>
+                          Royal Rumble Entries ({matchConfig.size} Wrestlers)
+                        </strong>
+                        <div className={styles.rumbleGrid}>
+                          {Array.from({ length: matchConfig.size }).map((_, wIdx) => (
+                            <div key={wIdx} className={styles.rumbleEntry}>
+                              <span>#{wIdx + 1}</span>
+                              <WrestlerPicker
+                                id={`match-${card.index}-participant-${wIdx}`}
+                                label={`Wrestler ${wIdx + 1} in match ${itemNumber}`}
+                                value={String((match.participants || [])[wIdx] || "")}
+                                wrestlers={sortedWrestlers}
+                                onChange={(wrestlerId) =>
+                                  onTeamWrestlerSelect(
+                                    card.index,
+                                    "participants",
+                                    wIdx,
+                                    wrestlerId,
+                                  )
+                                }
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className={styles.matchTeams}>
+                        {matchConfig.map((team, teamIndex) => (
+                          <Fragment key={team.key}>
+                            <div className={styles.matchTeam}>
+                              <strong>{team.label}</strong>
+                              {Array.from({ length: team.size }).map((_, wIdx) => (
+                                <WrestlerPicker
+                                  id={`match-${card.index}-${team.key}-wrestler-${wIdx}`}
+                                  label={`${team.label}, wrestler ${wIdx + 1}, match ${itemNumber}`}
+                                  key={wIdx}
+                                  value={String(match[team.key]?.[wIdx] || "")}
+                                  wrestlers={sortedWrestlers}
+                                  onChange={(wrestlerId) =>
+                                    onTeamWrestlerSelect(
+                                      card.index,
+                                      team.key,
+                                      wIdx,
+                                      wrestlerId,
+                                    )
+                                  }
+                                />
+                              ))}
+                            </div>
+                            {teamIndex < matchConfig.length - 1 && (
+                              <span className={styles.versus}>VS</span>
+                            )}
+                          </Fragment>
                         ))}
                       </div>
+                    )}
+                  </>
+                )}
 
-                      {tIdx < matchConfig.length - 1 && (
-                        <div
-                          style={{ alignSelf: "center", fontWeight: "bold" }}
-                        >
-                          VS
-                        </div>
-                      )}
-                    </Fragment>
-                  ))}
-                </div>
-              );
-            })()}
-          </div>
-        ))}
+                {segment && (
+                  <>
+                    <label htmlFor={`segment-${card.index}-title`}>Segment title</label>
+                    <input
+                      id={`segment-${card.index}-title`}
+                      type="text"
+                      placeholder="e.g. Champion promo, backstage attack..."
+                      value={segment.title}
+                      onChange={(event) =>
+                        onSegmentChange(card.index, "title", event.target.value)
+                      }
+                    />
 
-        <button
-          type="button"
-          className={styles.addShow}
-          onClick={onAddMatch}
-          style={{ marginTop: "10px", width: "100%" }}
-        >
-          + Add new match
-        </button>
+                    <label htmlFor={`segment-${card.index}-description`}>Description</label>
+                    <textarea
+                      id={`segment-${card.index}-description`}
+                      placeholder="Describe what happens in the scene..."
+                      value={segment.description}
+                      onChange={(event) =>
+                        onSegmentChange(card.index, "description", event.target.value)
+                      }
+                    />
 
-        <h4>SEGMENTS</h4>
-        {segmentsData.map((seg, sIdx) => (
-          <div key={sIdx} className={styles.matchBox}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <h5>Segment {sIdx + 1}</h5>
-              <button
-                type="button"
-                aria-label={`Delete segment ${sIdx + 1}`}
-                onClick={() => onRemoveSegment(sIdx)}
-              >
-                Delete
-              </button>
-            </div>
-
-            <label htmlFor={`segment-${sIdx}-title`}>Segment title:</label>
-            <input
-              id={`segment-${sIdx}-title`}
-              type="text"
-              placeholder="e.g. Champion promo, backstage attack..."
-              value={seg.title}
-              onChange={(e) => onSegmentChange(sIdx, "title", e.target.value)}
-            />
-
-            <label htmlFor={`segment-${sIdx}-description`}>Description:</label>
-            <textarea
-              id={`segment-${sIdx}-description`}
-              placeholder="Describe what happens in the scene..."
-              value={seg.description}
-              onChange={(e) =>
-                onSegmentChange(sIdx, "description", e.target.value)
-              }
-            />
-
-            <label htmlFor={`segment-${sIdx}-participant-0`}>Participants:</label>
-            {seg.selected_wrestlers.map((wId, wIdx) => (
-              <WrestlerPicker
-                id={`segment-${sIdx}-participant-${wIdx}`}
-                label={`Participant ${wIdx + 1} in segment ${sIdx + 1}`}
-                key={wIdx}
-                value={String(wId || "")}
-                wrestlers={sortedWrestlers}
-                onChange={(wrestlerId) =>
-                  onSegmentWrestlerSelect(sIdx, wIdx, wrestlerId)
-                }
-              />
-            ))}
-            <button type="button" onClick={() => onAddWrestlerToSegment(sIdx)}>
-              + Add participant
-            </button>
-          </div>
-        ))}
-
-        <button
-          type="button"
-          className={styles.addShow}
-          onClick={onAddSegment}
-          style={{ marginTop: "10px", width: "100%" }}
-        >
-          + Add new segment
-        </button>
+                    <span>Participants</span>
+                    {segment.selected_wrestlers.map((wrestlerId, wrestlerIndex) => (
+                      <WrestlerPicker
+                        id={`segment-${card.index}-participant-${wrestlerIndex}`}
+                        label={`Participant ${wrestlerIndex + 1} in segment ${itemNumber}`}
+                        key={wrestlerIndex}
+                        value={String(wrestlerId || "")}
+                        wrestlers={sortedWrestlers}
+                        onChange={(id) =>
+                          onSegmentWrestlerSelect(card.index, wrestlerIndex, id)
+                        }
+                      />
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => onAddWrestlerToSegment(card.index)}
+                    >
+                      + Add participant
+                    </button>
+                  </>
+                )}
+              </div>
+              <div className={styles.insertCardActions}>
+                <button
+                  type="button"
+                  onClick={() => onAddCard("match", cardIndex)}
+                >
+                  + Add match below
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onAddCard("segment", cardIndex)}
+                >
+                  + Add segment below
+                </button>
+              </div>
+            </Fragment>
+          );
+        })}
+        <div className={styles.insertCardActions}>
+          <button type="button" onClick={() => onAddCard("match", cardOrder.length - 1)}>
+            + Add match to card
+          </button>
+          <button type="button" onClick={() => onAddCard("segment", cardOrder.length - 1)}>
+            + Add segment to card
+          </button>
+        </div>
 
         <div className={styles.modalActions} style={{ marginTop: "20px" }}>
           <button type="button" onClick={onClose} className={styles.btnCancel}>

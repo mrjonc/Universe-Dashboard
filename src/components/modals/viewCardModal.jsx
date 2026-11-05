@@ -5,6 +5,7 @@ export default function ViewCardModal({
   activeShow,
   matchesData = [],
   segmentsData = [],
+  cardOrder = [],
   wrestlers = [],
   onClose,
   onEdit,
@@ -15,7 +16,7 @@ export default function ViewCardModal({
     const w = wrestlersList?.find(
       (item) => String(item.id) === String(wrestlerId),
     );
-    return w ? w.name : "Desconhecido";
+    return w ? w.name : "Unknown";
   };
 
   // Render participants according to the stored match structure.
@@ -27,10 +28,10 @@ export default function ViewCardModal({
       const parts = match.participants || match.wrestler_ids || [];
       return (
         <div>
-          <strong>Entradas:</strong>
+          <strong>Entries:</strong>
           <ol style={{ marginTop: "5px", paddingLeft: "20px" }}>
             {parts.map((wId, i) => (
-              <li key={i}>{getWrestlerName(wId, wrestlers) || "Vazio"}</li>
+              <li key={i}>{getWrestlerName(wId, wrestlers) || "Empty"}</li>
             ))}
           </ol>
         </div>
@@ -88,51 +89,45 @@ export default function ViewCardModal({
           {activeShow?.events?.event_name || "Show card"}
         </h3>
 
-        <h4 style={{ display: "flex", justifyContent: "center" }}>MATCHES</h4>
-        {matchesData && matchesData.length > 0 ? (
-          matchesData.map((match, idx) => (
-            <div
-              key={idx}
-              className={styles.matchBox}
-              style={{
-                backgroundColor: "#2a2a2a",
-                margin: "10px 0",
-                padding: "10px",
-              }}
-            >
-              <h5>
-                Match {idx + 1} ({match.match_type || "1v1"})
-              </h5>
-              {match.stipulation && (
-                <p>
-                  <strong>Stipulation:</strong> {match.stipulation}
-                </p>
-              )}
-              <div>{renderMatchParticipants(match)}</div>
-            </div>
-          ))
+        <h4 style={{ display: "flex", justifyContent: "center" }}>SHOW CARD</h4>
+        {cardOrder.length === 0 ? (
+          <p>No matches or segments scheduled.</p>
         ) : (
-          <p>No matches scheduled.</p>
-        )}
+          cardOrder.map((card, orderIndex) => {
+            if (card.type === "match") {
+              const match = matchesData[card.index];
+              if (!match) return null;
+              const matchNumber = cardOrder
+                .slice(0, orderIndex + 1)
+                .filter((item) => item.type === "match").length;
 
-        <h4>SEGMENTS</h4>
-        {segmentsData && segmentsData.length > 0 ? (
-          segmentsData.map((seg, idx) => {
+              return (
+                <div key={`match-${card.index}`} className={styles.matchBox}>
+                  <h5>
+                    Match {matchNumber} ({match.match_type || "1v1"})
+                  </h5>
+                  {match.stipulation && (
+                    <p>
+                      <strong>Stipulation:</strong> {match.stipulation}
+                    </p>
+                  )}
+                  <div>{renderMatchParticipants(match)}</div>
+                </div>
+              );
+            }
+
+            const segment = segmentsData[card.index];
+            if (!segment) return null;
+            const segmentNumber = cardOrder
+              .slice(0, orderIndex + 1)
+              .filter((item) => item.type === "segment").length;
             const segmentWrestlers =
-              seg.selected_wrestlers || seg.wrestler_ids || [];
+              segment.selected_wrestlers || segment.wrestler_ids || [];
 
             return (
-              <div
-                key={idx}
-                className={styles.matchBox}
-                style={{
-                  backgroundColor: "#2a2a2a",
-                  margin: "10px 0",
-                  padding: "10px",
-                }}
-              >
-                <h5>{seg.title || `Segment ${idx + 1}`}</h5>
-                {seg.description && <p>{seg.description}</p>}
+              <div key={`segment-${card.index}`} className={styles.matchBox}>
+                <h5>{segment.title || `Segment ${segmentNumber}`}</h5>
+                {segment.description && <p>{segment.description}</p>}
                 {segmentWrestlers.length > 0 && (
                   <p>
                     <strong>Participants:</strong>{" "}
@@ -145,8 +140,6 @@ export default function ViewCardModal({
               </div>
             );
           })
-        ) : (
-          <p>No segments scheduled.</p>
         )}
 
         <div

@@ -19,6 +19,37 @@ const formatWrestlers = (rosterWrestlers) =>
     }))
     .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
+const createCardOrder = (matches, segments) =>
+  [
+    ...matches.map((item, index) => ({
+      type: "match",
+      index,
+      order: item.card_order,
+    })),
+    ...segments.map((item, index) => ({
+      type: "segment",
+      index,
+      order: item.card_order,
+    })),
+  ]
+    .sort((a, b) => {
+      const aHasOrder =
+        a.order !== null &&
+        a.order !== undefined &&
+        Number.isFinite(Number(a.order));
+      const bHasOrder =
+        b.order !== null &&
+        b.order !== undefined &&
+        Number.isFinite(Number(b.order));
+      if (aHasOrder && bHasOrder && Number(a.order) !== Number(b.order)) {
+        return Number(a.order) - Number(b.order);
+      }
+      if (aHasOrder !== bHasOrder) return aHasOrder ? -1 : 1;
+      if (a.type !== b.type) return a.type === "match" ? -1 : 1;
+      return a.index - b.index;
+    })
+    .map(({ type, index }) => ({ type, index }));
+
 function Calendar() {
   const daysArray = Array.from({ length: DAYS_IN_MONTH }, (_, i) => i + 1);
   const { user } = useAuth();
@@ -43,6 +74,7 @@ function Calendar() {
 
   const [matchesData, setMatchesData] = useState([]);
   const [segmentsData, setSegmentsData] = useState([]);
+  const [cardOrder, setCardOrder] = useState([]);
 
   const formatDateKey = (year, monthIdx, day) => {
     const formattedMonth = String(monthIdx + 1).padStart(2, "0");
@@ -243,6 +275,9 @@ function Calendar() {
     setWrestlers(formatWrestlers(rosterWrestlers || []));
     setActiveShow(show);
 
+    let nextMatches = [];
+    let nextSegments = [];
+
     if (show.is_booked) {
       const [matchesRes, segmentsRes] = await Promise.all([
         supabase
@@ -264,74 +299,75 @@ function Calendar() {
         return;
       }
 
-      if (matchesRes.data && matchesRes.data.length > 0) {
-        setMatchesData(
-          matchesRes.data.map((m) => {
-            const matchType = m.match_type || "1v1";
-            const teamStructure = mapWrestlersToTeams(
-              matchType,
-              m.wrestler_ids || [],
-            );
-            return {
-              match_number: m.match_number,
-              stipulation: m.stipulation || "",
-              match_type: matchType,
-              ...teamStructure,
-            };
-          }),
-        );
+      if (matchesRes.data?.length) {
+        nextMatches = matchesRes.data.map((m) => {
+          const matchType = m.match_type || "1v1";
+          const teamStructure = mapWrestlersToTeams(
+            matchType,
+            m.wrestler_ids || [],
+          );
+          return {
+            ...m,
+            stipulation: m.stipulation || "",
+            match_type: matchType,
+            ...teamStructure,
+          };
+        });
       } else {
-        setMatchesData(
-          Array.from({ length: show.matches_count }, (_, index) => ({
+        nextMatches = Array.from(
+          { length: show.matches_count },
+          (_, index) => ({
             match_number: index + 1,
             stipulation: "",
             match_type: "1v1",
             team_a: [""],
             team_b: [""],
-          })),
+          }),
         );
       }
 
-      if (segmentsRes.data && segmentsRes.data.length > 0) {
-        setSegmentsData(
-          segmentsRes.data.map((s) => ({
-            segment_number: s.segment_number,
+      if (segmentsRes.data?.length) {
+        nextSegments = segmentsRes.data.map((s) => ({
+            ...s,
             title: s.title || "",
             description: s.description || "",
             selected_wrestlers: s.wrestler_ids || [""],
-          })),
-        );
+          }));
       } else {
-        setSegmentsData([
+        nextSegments = [
           {
             segment_number: 1,
             title: "Open Promo",
             description: "",
             selected_wrestlers: [""],
           },
-        ]);
+        ];
       }
     } else {
-      setMatchesData(
-        Array.from({ length: show.matches_count }, (_, index) => ({
+      nextMatches = Array.from(
+        { length: show.matches_count },
+        (_, index) => ({
           match_number: index + 1,
           stipulation: "",
           match_type: "1v1",
           team_a: [""],
           team_b: [""],
-        })),
+        }),
       );
 
-      setSegmentsData([
+      nextSegments = [
         {
           segment_number: 1,
           title: "Open Promo",
           description: "",
           selected_wrestlers: [""],
         },
-      ]);
+      ];
     }
 
+    setMatchesData(nextMatches);
+    setSegmentsData(nextSegments);
+    setCardOrder(createCardOrder(nextMatches, nextSegments));
     setShowBookingModal(true);
   };
 
@@ -340,30 +376,27 @@ function Calendar() {
     handleOpenBookingModal(show);
   };
 
-  const handleAddMatch = () => {
-    setMatchesData([
-      ...matchesData,
-      {
-        match_number: matchesData.length + 1,
-        stipulation: "",
-        match_type: "1v1",
-        team_a: [""],
-        team_b: [""],
-      },
-    ]);
-  };
-
   const handleRemoveMatch = (index) => {
-    const updated = matchesData
-      .filter((_, idx) => idx !== index)
-      .map((m, idx) => ({ ...m, match_number: idx + 1 }));
-    setMatchesData(updated);
+    setMatchesData((current) => current.filter((_, idx) => idx !== index));
+    setCardOrder((current) =>
+      current
+        .filter((item) => item.type !== "match" || item.index !== index)
+        .map((item) => ({
+          ...item,
+          index:
+            item.type === "match" && item.index > index
+              ? item.index - 1
+              : item.index,
+        })),
+    );
   };
 
   const handleMatchChange = (index, field, value) => {
-    const updated = [...matchesData];
-    updated[index][field] = value;
-    setMatchesData(updated);
+    setMatchesData((current) =>
+      current.map((match, matchIndex) =>
+        matchIndex === index ? { ...match, [field]: value } : match,
+      ),
+    );
   };
 
   const handleTeamWrestlerSelect = (
@@ -383,29 +416,73 @@ function Calendar() {
     setMatchesData(updated);
   };
 
-  const handleAddSegment = () => {
-    setSegmentsData([
-      ...segmentsData,
-      {
-        segment_number: segmentsData.length + 1,
-        title: "",
-        description: "",
-        selected_wrestlers: [""],
-      },
-    ]);
+  const handleRemoveSegment = (index) => {
+    setSegmentsData((current) => current.filter((_, idx) => idx !== index));
+    setCardOrder((current) =>
+      current
+        .filter((item) => item.type !== "segment" || item.index !== index)
+        .map((item) => ({
+          ...item,
+          index:
+            item.type === "segment" && item.index > index
+              ? item.index - 1
+              : item.index,
+        })),
+    );
   };
 
-  const handleRemoveSegment = (index) => {
-    const updated = segmentsData
-      .filter((_, idx) => idx !== index)
-      .map((s, idx) => ({ ...s, segment_number: idx + 1 }));
-    setSegmentsData(updated);
+  const handleAddCard = (type, afterIndex) => {
+    const newIndex =
+      type === "match" ? matchesData.length : segmentsData.length;
+    const newItem =
+      type === "match"
+        ? {
+            match_number: newIndex + 1,
+            stipulation: "",
+            match_type: "1v1",
+            team_a: [""],
+            team_b: [""],
+          }
+        : {
+            segment_number: newIndex + 1,
+            title: "",
+            description: "",
+            selected_wrestlers: [""],
+          };
+
+    if (type === "match") {
+      setMatchesData((current) => [...current, newItem]);
+    } else {
+      setSegmentsData((current) => [...current, newItem]);
+    }
+
+    setCardOrder((current) => {
+      const updated = [...current];
+      updated.splice(afterIndex + 1, 0, { type, index: newIndex });
+      return updated;
+    });
+  };
+
+  const handleMoveCard = (index, direction) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= cardOrder.length) return;
+
+    setCardOrder((current) => {
+      const updated = [...current];
+      [updated[index], updated[targetIndex]] = [
+        updated[targetIndex],
+        updated[index],
+      ];
+      return updated;
+    });
   };
 
   const handleSegmentChange = (index, field, value) => {
-    const updated = [...segmentsData];
-    updated[index][field] = value;
-    setSegmentsData(updated);
+    setSegmentsData((current) =>
+      current.map((segment, segmentIndex) =>
+        segmentIndex === index ? { ...segment, [field]: value } : segment,
+      ),
+    );
   };
 
   const handleSegmentWrestlerSelect = (
@@ -413,19 +490,48 @@ function Calendar() {
     wrestlerIndex,
     wrestlerId,
   ) => {
-    const updated = [...segmentsData];
-    updated[segmentIndex].selected_wrestlers[wrestlerIndex] = wrestlerId;
-    setSegmentsData(updated);
+    setSegmentsData((current) =>
+      current.map((segment, index) =>
+        index === segmentIndex
+          ? {
+              ...segment,
+              selected_wrestlers: segment.selected_wrestlers.map((id, idx) =>
+                idx === wrestlerIndex ? wrestlerId : id,
+              ),
+            }
+          : segment,
+      ),
+    );
   };
 
   const handleAddWrestlerToSegment = (segmentIndex) => {
-    const updated = [...segmentsData];
-    updated[segmentIndex].selected_wrestlers.push("");
-    setSegmentsData(updated);
+    setSegmentsData((current) =>
+      current.map((segment, index) =>
+        index === segmentIndex
+          ? {
+              ...segment,
+              selected_wrestlers: [...segment.selected_wrestlers, ""],
+            }
+          : segment,
+      ),
+    );
   };
 
   const handleSaveBooking = async () => {
     if (!activeShow) return;
+
+    const [matchesOrderCheck, segmentsOrderCheck] = await Promise.all([
+      supabase.from("matches").select("card_order").limit(0),
+      supabase.from("segments").select("card_order").limit(0),
+    ]);
+    const schemaError = matchesOrderCheck.error || segmentsOrderCheck.error;
+    if (schemaError) {
+      console.error("Could not verify show-card order support:", schemaError);
+      alert(
+        "Could not save this card's order. Apply the show-card ordering migration in Supabase and try again.",
+      );
+      return;
+    }
 
     if (activeShow.is_booked) {
       const [matchesDelete, segmentsDelete] = await Promise.all([
@@ -440,36 +546,51 @@ function Calendar() {
       }
     }
 
-    const matchesPayload = matchesData.map((m, idx) => {
-      const allWrestlerIds = m.participants
-        ? m.participants
-        : [
-            ...(m.team_a || []),
-            ...(m.team_b || []),
-            ...(m.team_c || []),
-            ...(m.team_d || []),
-            ...(m.team_e || []),
-            ...(m.team_f || []),
-          ];
+    let matchNumber = 0;
+    let segmentNumber = 0;
+    const matchesPayload = [];
+    const segmentsPayload = [];
 
-      return {
-        show_id: activeShow.id,
-        match_number: idx + 1,
-        stipulation: m.stipulation || "",
-        match_type: m.match_type || "1v1",
-        wrestler_ids: allWrestlerIds.filter(Boolean),
-        user_id: user.id,
-      };
+    cardOrder.forEach((card, cardIndex) => {
+      if (card.type === "match") {
+        const m = matchesData[card.index];
+        if (!m) return;
+
+        const allWrestlerIds = m.participants
+          ? m.participants
+          : [
+              ...(m.team_a || []),
+              ...(m.team_b || []),
+              ...(m.team_c || []),
+              ...(m.team_d || []),
+              ...(m.team_e || []),
+              ...(m.team_f || []),
+            ];
+
+        matchesPayload.push({
+          show_id: activeShow.id,
+          match_number: ++matchNumber,
+          card_order: cardIndex + 1,
+          stipulation: m.stipulation || "",
+          match_type: m.match_type || "1v1",
+          wrestler_ids: allWrestlerIds.filter(Boolean),
+          user_id: user.id,
+        });
+      } else {
+        const segment = segmentsData[card.index];
+        if (!segment) return;
+
+        segmentsPayload.push({
+          show_id: activeShow.id,
+          segment_number: ++segmentNumber,
+          card_order: cardIndex + 1,
+          title: segment.title || "Segment",
+          description: segment.description || "",
+          wrestler_ids: segment.selected_wrestlers.filter(Boolean),
+          user_id: user.id,
+        });
+      }
     });
-
-    const segmentsPayload = segmentsData.map((s, idx) => ({
-      show_id: activeShow.id,
-      segment_number: idx + 1,
-      title: s.title || "Segment",
-      description: s.description || "",
-      wrestler_ids: s.selected_wrestlers.filter(Boolean),
-      user_id: user.id,
-    }));
 
     if (matchesPayload.length > 0) {
       const { error: matchesError } = await supabase
@@ -538,26 +659,23 @@ function Calendar() {
       return;
     }
 
-    if (matchesRes.data) {
-      const formattedMatches = matchesRes.data.map((m) => {
-        const matchType = m.match_type || "1v1";
-        const teamStructure = mapWrestlersToTeams(
-          matchType,
-          m.wrestler_ids || [],
-        );
-        return {
-          ...m,
-          match_type: matchType,
-          stipulation: m.stipulation || "",
-          ...teamStructure,
-        };
-      });
-      setMatchesData(formattedMatches);
-    }
-
-    if (segmentsRes.data) {
-      setSegmentsData(segmentsRes.data);
-    }
+    const formattedMatches = (matchesRes.data || []).map((m) => {
+      const matchType = m.match_type || "1v1";
+      const teamStructure = mapWrestlersToTeams(
+        matchType,
+        m.wrestler_ids || [],
+      );
+      return {
+        ...m,
+        match_type: matchType,
+        stipulation: m.stipulation || "",
+        ...teamStructure,
+      };
+    });
+    const formattedSegments = segmentsRes.data || [];
+    setMatchesData(formattedMatches);
+    setSegmentsData(formattedSegments);
+    setCardOrder(createCardOrder(formattedMatches, formattedSegments));
 
     setShowViewModal(true);
   };
@@ -756,14 +874,15 @@ function Calendar() {
           activeShow={activeShow}
           matchesData={matchesData}
           segmentsData={segmentsData}
+          cardOrder={cardOrder}
           wrestlers={wrestlers}
           onClose={() => setShowBookingModal(false)}
           onSave={handleSaveBooking}
-          onAddMatch={handleAddMatch}
+          onAddCard={handleAddCard}
+          onMoveCard={handleMoveCard}
           onRemoveMatch={handleRemoveMatch}
           onMatchChange={handleMatchChange}
           onTeamWrestlerSelect={handleTeamWrestlerSelect}
-          onAddSegment={handleAddSegment}
           onRemoveSegment={handleRemoveSegment}
           onSegmentChange={handleSegmentChange}
           onSegmentWrestlerSelect={handleSegmentWrestlerSelect}
@@ -776,6 +895,7 @@ function Calendar() {
           activeShow={activeShow}
           matchesData={matchesData}
           segmentsData={segmentsData}
+          cardOrder={cardOrder}
           wrestlers={wrestlers}
           onClose={() => setShowViewModal(false)}
           onEdit={() => handleOpenEditModal(activeShow)}

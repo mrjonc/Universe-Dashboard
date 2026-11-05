@@ -47,6 +47,34 @@
   .mobileWrestlerInput {
     display: block;
   }
+
+  .cardItemHeader {
+    align-items: flex-start;
+  }
+
+  .cardItemControls {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .cardItemControls button,
+  .insertCardActions button {
+    flex: 1 1 auto;
+    min-height: 2.5rem;
+  }
+
+  .matchTeam {
+    min-width: 100%;
+  }
+
+  .versus {
+    width: 100%;
+    text-align: center;
+  }
+
+  .rumbleGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .modalContent h3,
@@ -107,6 +135,99 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.cardItemHeader,
+.cardItemControls,
+.insertCardActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cardItemHeader {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.cardItemHeader h5 {
+  margin: 0;
+}
+
+.cardItemControls button,
+.insertCardActions button {
+  padding: 0.35rem 0.55rem;
+}
+
+.cardItemControls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.insertCardActions {
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: -0.15rem 0 0.75rem;
+}
+
+.insertCardActions button {
+  background: #333;
+}
+
+.matchTeams {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.matchTeam {
+  flex: 1;
+  min-width: 150px;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background: #222;
+}
+
+.matchTeam .desktopWrestlerSelect,
+.matchTeam .mobileWrestlerInput {
+  margin-top: 0.4rem;
+}
+
+.versus {
+  align-self: center;
+  font-weight: bold;
+}
+
+.rumbleParticipants {
+  margin-top: 0.6rem;
+  padding: 0.6rem;
+  border-radius: 4px;
+  background: #222;
+}
+
+.rumbleGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.rumbleEntry {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.rumbleEntry > span {
+  font-size: 0.75rem;
+}
+
+.rumbleEntry > :last-child {
+  min-width: 0;
+  flex: 1;
 }
 
 .matchBox button {

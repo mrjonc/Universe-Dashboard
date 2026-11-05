@@ -42,3 +42,12 @@ npm run build
 ```
 
 Pages are loaded on demand to reduce the initial JavaScript bundle.
+
+## Mixed show card order
+
+To interleave matches and segments in a show card and save their order, also
+apply
+[`supabase/migrations/20261105010000_interleaved_show_card_order.sql`](./supabase/migrations/20261105010000_interleaved_show_card_order.sql)
+after the championship migration. Existing cards without a saved mixed order
+continue to display matches first, followed by segments; saving them records
+their new order.
