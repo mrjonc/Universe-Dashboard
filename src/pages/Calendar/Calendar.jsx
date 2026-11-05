@@ -667,8 +667,12 @@ function Calendar() {
                       />
                     )}
 
-                    <small className={styles.matchesCount}>
-                      {dayShow.matches_count} MATCHES
+                    <small
+                      className={styles.matchesCount}
+                      aria-label={`${dayShow.matches_count} matches`}
+                    >
+                      {dayShow.matches_count}{" "}
+                      <span className={styles.matchesLabel}>MATCHES</span>
                     </small>
 
                     {dayShow.is_booked ? (

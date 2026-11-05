@@ -181,6 +181,7 @@
   letter-spacing: 0.5px;
   font-family: sans-serif;
   font-weight: 600;
+  text-align: center;
 }
 
 /* Card buttons */
@@ -252,36 +253,6 @@
   font-size: 0.85rem;
 }
 
-/* Mobile */
-@media (max-width: 480px) {
-  .calendarContainer {
-    padding: 0.6rem;
-  }
-
-  .calendarDays {
-    gap: 3px;
-  }
-
-  .dayCell {
-    padding: 3px;
-  }
-
-  .brandIcon {
-    max-width: 32px;
-    max-height: 18px;
-  }
-
-  .actionBtn {
-    font-size: 0.5rem;
-    padding: 2px 0;
-  }
-
-  .addShow {
-    width: 20px;
-    height: 20px;
-  }
-}
-
 /* ===================================
    Mobile responsiveness (button layout)
    =================================== */
@@ -332,7 +303,7 @@
   }
 
   .brandIcon {
-    max-width: 26px;
+    max-width: 18px;
     max-height: 14px;
   }
 
@@ -340,19 +311,29 @@
     font-size: 0.5rem;
   }
 
-  /* Stack buttons on mobile to keep them inside the cell */
   .actionGroup {
-    flex-direction: column;
+    flex-direction: row;
     gap: 1px;
     width: 100%;
   }
 
   .actionBtn {
-    font-size: 0.45rem;
-    padding: 1px 0;
+    flex: 1 1 0;
+    min-width: 0;
+    font-size: 0.4rem;
+    padding: 2px 0;
     line-height: 1.1;
     text-align: center;
-    width: 100%;
+    letter-spacing: 0;
+  }
+
+  .matchesCount {
+    font-size: 0.45rem;
+    letter-spacing: 0;
+  }
+
+  .matchesLabel {
+    display: none;
   }
 
   .addShow {
