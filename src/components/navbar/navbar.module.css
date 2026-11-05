@@ -35,6 +35,20 @@
   border-radius: 1rem;
 }
 
+.btn a[aria-current="page"] {
+  color: #fff;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3rem;
+}
+
+.btn a:focus-visible,
+.logoutBtn:focus-visible,
+.menuToggle:focus-visible {
+  outline: 3px solid #ffd166;
+  outline-offset: 3px;
+}
+
 .logoutBtn {
   background-color: #dc2626;
   color: #fff;
@@ -50,7 +64,7 @@
   background-color: #b91c1c;
 }
 
-/* Escondido no Desktop */
+/* Hidden on desktop */
 .menuToggle {
   display: none;
   background: none;
@@ -61,7 +75,7 @@
 }
 
 /* ===================================
-   RESPONSIVIDADE MOBILE (Menu Sanduíche)
+   Mobile responsiveness (hamburger menu)
    =================================== */
 @media (max-width: 768px) {
   .navbar {
@@ -72,7 +86,7 @@
     display: block;
   }
 
-  /* O container de botões vira um menu suspenso */
+  /* The button container becomes a dropdown menu */
   .btn {
     display: none;
     flex-direction: column;
@@ -87,7 +101,7 @@
     z-index: 100;
   }
 
-  /* Classe para abrir o menu via JS */
+  /* Toggled by JavaScript to open the menu */
   .btn.active {
     display: flex;
   }

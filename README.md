@@ -1,16 +1,44 @@
-# React + Vite
+# Universe Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A dashboard for managing shows, a personal roster, and championships in a WWE
+Universe. The interface is in English and supports keyboard navigation,
+visible focus, reduced motion, and keyboard-accessible dialogs.
 
-Currently, two official plugins are available:
+## Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js and npm
+- A Supabase project configured with the tables used by the app
 
-## React Compiler
+Create a `.env` file in the project root:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
 
-## Expanding the Oxlint configuration
+Never expose an administrative or `service_role` key in the front end.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Personal championship titles
+
+Championships created in the app belong to the signed-in account. Before using
+the create/delete title actions, apply
+[`supabase/migrations/20261105000000_user_owned_championships.sql`](./supabase/migrations/20261105000000_user_owned_championships.sql)
+to the Supabase database (for example, in the Supabase SQL Editor). It adds
+ownership and row-level security while keeping existing titles with a `NULL`
+owner shared and readable.
+
+## Development
+
+```sh
+npm install
+npm run dev
+```
+
+## Verification
+
+```sh
+npm run lint
+npm run build
+```
+
+Pages are loaded on demand to reduce the initial JavaScript bundle.

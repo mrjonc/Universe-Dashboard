@@ -1,5 +1,5 @@
-import React from "react";
 import styles from "./CalendarModal.module.css";
+import AccessibleDialog from "./AccessibleDialog.jsx";
 
 export default function AddShowModal({
   selectedDay,
@@ -11,85 +11,67 @@ export default function AddShowModal({
   onClose,
   onCreate,
 }) {
+  const selectedBrandId = newBrandId || (brands[0] ? brands[0].id : null);
+
   const handleCreate = (e) => {
     e.preventDefault();
+    if (!selectedBrandId || Number(newMatchesCount) < 1) return;
 
-    // Garante um ID válido caso o usuário não mexa no select
-    const selectedBrandId = newBrandId || (brands[0] ? brands[0].id : null);
-
-    if (!selectedBrandId) {
-      alert("Selecione um evento válido!");
-      return;
-    }
-
-    // Passa o objeto estruturado em vez do evento 'e'
     onCreate({
       brandId: selectedBrandId,
-      matchesCount: Number(newMatchesCount) || 1,
+      matchesCount: Number(newMatchesCount),
       day: selectedDay,
     });
   };
 
   return (
-    <div className={styles.modalOverlay}>
-      <div
-        className={styles.modalContent}
-        style={{
-          backgroundColor: "rgb(56, 53, 53)",
-          color: "white",
-        }}
-      >
-        <h3>Add a Show - Day {selectedDay}</h3>
+    <AccessibleDialog
+      overlayClassName={styles.modalOverlay}
+      contentClassName={styles.modalContent}
+      titleId="add-show-title"
+      onClose={onClose}
+    >
+      <h3 id="add-show-title">Add a show — day {selectedDay}</h3>
 
-        <label style={{ display: "block", marginBottom: "4px" }}>Event:</label>
+      <form onSubmit={handleCreate}>
+        <label htmlFor="show-event">Event:</label>
         <select
-          value={newBrandId || (brands[0] ? brands[0].id : "")}
+          id="show-event"
+          value={selectedBrandId || ""}
           onChange={(e) => setNewBrandId(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "8px",
-            marginBottom: "12px",
-            backgroundColor: "#2a2a2a",
-            color: "white",
-            border: "1px solid #444",
-            borderRadius: "4px",
-          }}
+          required
+          disabled={brands.length === 0}
         >
+          {brands.length === 0 && (
+            <option value="">No events available</option>
+          )}
           {brands.map((b) => (
-            <option key={b.id} value={b.id} style={{ color: "black" }}>
+            <option key={b.id} value={b.id}>
               {b.event_name || b.name || `Event ${b.id}`}
             </option>
           ))}
         </select>
 
-        <div style={{ marginBottom: "16px" }}>
-          <label>Number of Matches: </label>
-          <input
-            type="number"
-            min="1"
-            value={newMatchesCount}
-            onChange={(e) => setNewMatchesCount(e.target.value)}
-            style={{
-              width: "60px",
-              padding: "4px 8px",
-              marginLeft: "8px",
-              backgroundColor: "#2a2a2a",
-              color: "white",
-              border: "1px solid #444",
-              borderRadius: "4px",
-            }}
-          />
-        </div>
+        <label htmlFor="show-matches">Number of matches:</label>
+        <input
+          id="show-matches"
+          type="number"
+          min="1"
+          step="1"
+          required
+          value={newMatchesCount}
+          onChange={(e) => setNewMatchesCount(e.target.value)}
+        />
 
         <div className={styles.modalActions}>
           <button type="button" onClick={onClose} className={styles.btnCancel}>
             Cancel
           </button>
-          <button type="button" onClick={handleCreate}>
-            Create a Show
+          <button type="submit" disabled={!selectedBrandId}>
+            Create show
           </button>
         </div>
-      </div>
-    </div>
+      </form>
+    </AccessibleDialog>
   );
 }

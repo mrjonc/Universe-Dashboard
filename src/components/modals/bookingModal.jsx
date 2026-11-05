@@ -1,6 +1,7 @@
-import React from "react";
-// import styles from "./calendar.module.css";
+import { Fragment, useMemo } from "react";
 import styles from "./CalendarModal.module.css";
+import AccessibleDialog from "./AccessibleDialog.jsx";
+import WrestlerPicker from "./WrestlerPicker.jsx";
 
 export default function BookingModal({
   activeShow,
@@ -19,7 +20,7 @@ export default function BookingModal({
   onSegmentWrestlerSelect,
   onAddWrestlerToSegment,
 }) {
-  const sortedWrestlers = React.useMemo(() => {
+  const sortedWrestlers = useMemo(() => {
     return [...wrestlers].sort((a, b) =>
       (a.name || "").localeCompare(b.name || ""),
     );
@@ -119,28 +120,35 @@ export default function BookingModal({
   };
 
   return (
-    <div className={styles.modalOverlay}>
-      <div
-        className={styles.modalContent}
-        style={{
-          backgroundColor: "rgb(56, 53, 53)",
-          color: "white",
-        }}
-      >
-        <h3>{activeShow.events?.name || activeShow.events?.event_name}</h3>
+    <AccessibleDialog
+      overlayClassName={styles.modalOverlay}
+      contentClassName={styles.modalContent}
+      titleId="booking-title"
+      onClose={onClose}
+    >
+        <h3 id="booking-title">
+          {activeShow.events?.name || activeShow.events?.event_name || "Booking"}
+        </h3>
 
-        <h4>--- MATCHES ---</h4>
+        <h4>MATCHES</h4>
         {matchesData.map((match, idx) => (
           <div key={idx} className={styles.matchBox}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <h5>Match {idx + 1}</h5>
               {matchesData.length > 1 && (
-                <button onClick={() => onRemoveMatch(idx)}>Delete Match</button>
+                <button
+                  type="button"
+                  aria-label={`Delete match ${idx + 1}`}
+                  onClick={() => onRemoveMatch(idx)}
+                >
+                  Delete match
+                </button>
               )}
             </div>
 
-            <label>Stipulation</label>
+            <label htmlFor={`match-${idx}-stipulation`}>Stipulation</label>
             <input
+              id={`match-${idx}-stipulation`}
               type="text"
               value={match.stipulation}
               onChange={(e) =>
@@ -148,25 +156,26 @@ export default function BookingModal({
               }
             />
 
-            <label>Match Type</label>
+            <label htmlFor={`match-${idx}-type`}>Match type</label>
             <select
+              id={`match-${idx}-type`}
               value={match.match_type || "1v1"}
               onChange={(e) => onMatchChange(idx, "match_type", e.target.value)}
               style={{ marginBottom: "10px" }}
             >
-              <option value="1v1">(One-on-One Match)</option>
-              <option value="2v2">(Tag Team Match)</option>
-              <option value="3v3">(6-Man Tag Team Match)</option>
-              <option value="4v4">(8-Man Tag Team Match)</option>
-              <option value="1v2">(1-on-2 Handicap Match)</option>
-              <option value="1v3">(1-on-3 Handicap Match)</option>
-              <option value="2v3">(2-on-3 Handicap Match)</option>
-              <option value="1v1v1">(Triple Threat Match)</option>
-              <option value="2v2v2">(Triple Threat Tag Team Match)</option>
-              <option value="1v1v1v1">(Fatal 4-Way Match)</option>
-              <option value="2v2v2v2">(Fatal 4-Way Tag Team Match)</option>
-              <option value="1v1v1v1v1">(Fatal 5-Way Match)</option>
-              <option value="1v1v1v1v1v1">(Six Pack Match)</option>
+              <option value="1v1">One-on-One Match</option>
+              <option value="2v2">Tag Team Match</option>
+              <option value="3v3">6-Man Tag Team Match</option>
+              <option value="4v4">8-Man Tag Team Match</option>
+              <option value="1v2">1-on-2 Handicap Match</option>
+              <option value="1v3">1-on-3 Handicap Match</option>
+              <option value="2v3">2-on-3 Handicap Match</option>
+              <option value="1v1v1">Triple Threat Match</option>
+              <option value="2v2v2">Triple Threat Tag Team Match</option>
+              <option value="1v1v1v1">Fatal 4-Way</option>
+              <option value="2v2v2v2">Fatal 4-Way Tag Team Match</option>
+              <option value="1v1v1v1v1">Fatal 5-Way Match</option>
+              <option value="1v1v1v1v1v1">Six Pack Match</option>
               <optgroup label="ROYAL RUMBLE">
                 <option value="rumble_10">Royal Rumble (10-man)</option>
                 <option value="rumble_20">Royal Rumble (20-man)</option>
@@ -189,7 +198,7 @@ export default function BookingModal({
                       borderRadius: "4px",
                     }}
                   >
-                    <strong>
+                    <strong id={`match-${idx}-participants-title`}>
                       Royal Rumble Entries ({matchConfig.size} Wrestlers)
                     </strong>
 
@@ -216,25 +225,20 @@ export default function BookingModal({
                             >
                               #{wIdx + 1}
                             </span>
-                            <select
+                            <WrestlerPicker
+                              id={`match-${idx}-participant-${wIdx}`}
+                              label={`Wrestler ${wIdx + 1} in match ${idx + 1}`}
                               value={String(participants[wIdx] || "")}
-                              onChange={(e) =>
+                              wrestlers={sortedWrestlers}
+                              onChange={(wrestlerId) =>
                                 onTeamWrestlerSelect(
                                   idx,
                                   "participants",
                                   wIdx,
-                                  e.target.value,
+                                  wrestlerId,
                                 )
                               }
-                              style={{ width: "100%" }}
-                            >
-                              <option value="">-- Selecione --</option>
-                              {sortedWrestlers.map((w) => (
-                                <option key={w.id} value={String(w.id)}>
-                                  {w.name}
-                                </option>
-                              ))}
-                            </select>
+                            />
                           </div>
                         ),
                       )}
@@ -253,7 +257,7 @@ export default function BookingModal({
                   }}
                 >
                   {matchConfig.map((team, tIdx) => (
-                    <React.Fragment key={team.key}>
+                    <Fragment key={team.key}>
                       <div
                         style={{
                           flex: 1,
@@ -265,26 +269,21 @@ export default function BookingModal({
                       >
                         <strong>{team.label}</strong>
                         {Array.from({ length: team.size }).map((_, wIdx) => (
-                          <select
+                          <WrestlerPicker
+                            id={`match-${idx}-${team.key}-wrestler-${wIdx}`}
+                            label={`${team.label}, wrestler ${wIdx + 1}, match ${idx + 1}`}
                             key={wIdx}
                             value={String(match[team.key]?.[wIdx] || "")}
-                            onChange={(e) =>
+                            wrestlers={sortedWrestlers}
+                            onChange={(wrestlerId) =>
                               onTeamWrestlerSelect(
                                 idx,
                                 team.key,
                                 wIdx,
-                                e.target.value,
+                                wrestlerId,
                               )
                             }
-                            style={{ width: "100%", marginTop: "5px" }}
-                          >
-                            <option value="">-- Selecione o Lutador --</option>
-                            {sortedWrestlers.map((w) => (
-                              <option key={w.id} value={String(w.id)}>
-                                {w.name}
-                              </option>
-                            ))}
-                          </select>
+                          />
                         ))}
                       </div>
 
@@ -295,7 +294,7 @@ export default function BookingModal({
                           VS
                         </div>
                       )}
-                    </React.Fragment>
+                    </Fragment>
                   ))}
                 </div>
               );
@@ -312,50 +311,54 @@ export default function BookingModal({
           + Add new match
         </button>
 
-        <h4>--- SEGMENTS ---</h4>
+        <h4>SEGMENTS</h4>
         {segmentsData.map((seg, sIdx) => (
           <div key={sIdx} className={styles.matchBox}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <h5>Segment {sIdx + 1}</h5>
-              <button onClick={() => onRemoveSegment(sIdx)}>Delete</button>
+              <button
+                type="button"
+                aria-label={`Delete segment ${sIdx + 1}`}
+                onClick={() => onRemoveSegment(sIdx)}
+              >
+                Delete
+              </button>
             </div>
 
-            <label>Segment title:</label>
+            <label htmlFor={`segment-${sIdx}-title`}>Segment title:</label>
             <input
+              id={`segment-${sIdx}-title`}
               type="text"
-              placeholder="Ex: Promo do Campeão, Ataque Backstage..."
+              placeholder="e.g. Champion promo, backstage attack..."
               value={seg.title}
               onChange={(e) => onSegmentChange(sIdx, "title", e.target.value)}
             />
 
-            <label>Description</label>
+            <label htmlFor={`segment-${sIdx}-description`}>Description:</label>
             <textarea
-              placeholder="Detalhes do que acontece na cena..."
+              id={`segment-${sIdx}-description`}
+              placeholder="Describe what happens in the scene..."
               value={seg.description}
               onChange={(e) =>
                 onSegmentChange(sIdx, "description", e.target.value)
               }
             />
 
-            <label>Participants:</label>
+            <label htmlFor={`segment-${sIdx}-participant-0`}>Participants:</label>
             {seg.selected_wrestlers.map((wId, wIdx) => (
-              <select
+              <WrestlerPicker
+                id={`segment-${sIdx}-participant-${wIdx}`}
+                label={`Participant ${wIdx + 1} in segment ${sIdx + 1}`}
                 key={wIdx}
                 value={String(wId || "")}
-                onChange={(e) =>
-                  onSegmentWrestlerSelect(sIdx, wIdx, e.target.value)
+                wrestlers={sortedWrestlers}
+                onChange={(wrestlerId) =>
+                  onSegmentWrestlerSelect(sIdx, wIdx, wrestlerId)
                 }
-              >
-                <option value="">-- Select the participant --</option>
-                {sortedWrestlers.map((w) => (
-                  <option key={w.id} value={String(w.id)}>
-                    {w.name}
-                  </option>
-                ))}
-              </select>
+              />
             ))}
             <button type="button" onClick={() => onAddWrestlerToSegment(sIdx)}>
-              + Add Participant
+              + Add participant
             </button>
           </div>
         ))}
@@ -370,12 +373,11 @@ export default function BookingModal({
         </button>
 
         <div className={styles.modalActions} style={{ marginTop: "20px" }}>
-          <button onClick={onClose} className={styles.btnCancel}>
+          <button type="button" onClick={onClose} className={styles.btnCancel}>
             Cancel
           </button>
-          <button onClick={onSave}>Save Card</button>
+          <button type="button" onClick={onSave}>Save card</button>
         </div>
-      </div>
-    </div>
+    </AccessibleDialog>
   );
 }

@@ -1,28 +1,34 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient.js";
-
-const AuthContext = createContext({});
+import { AuthContext } from "./authContext.js";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Obtém a sessão atual ao carregar a página
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    let active = true;
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (!active) return;
+      if (error) console.error("Failed to restore session:", error.message);
       setUser(session?.user ?? null);
+      setLoading(false);
+    }).catch((error) => {
+      if (!active) return;
+      console.error("Failed to restore session:", error);
       setLoading(false);
     });
 
-    // 2. Escuta mudanças na autenticação (login, logout, etc.)
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        if (!active) return;
         setUser(session?.user ?? null);
         setLoading(false);
       },
     );
 
     return () => {
+      active = false;
       listener.subscription.unsubscribe();
     };
   }, []);
@@ -36,7 +42,6 @@ export function AuthProvider({ children }) {
     return data;
   };
 
-  // Função para realizar o login
   const login = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -46,7 +51,6 @@ export function AuthProvider({ children }) {
     return data;
   };
 
-  // Função para realizar o logout
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
@@ -58,5 +62,3 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
-
-export const useAuth = () => useContext(AuthContext);

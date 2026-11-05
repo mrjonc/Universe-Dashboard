@@ -1,6 +1,8 @@
 function LoadingSpinner() {
   return (
     <div
+      role="status"
+      aria-live="polite"
       style={{
         display: "flex",
         justifyContent: "center",
@@ -8,7 +10,9 @@ function LoadingSpinner() {
         padding: "4rem",
       }}
     >
+      <span className="visuallyHidden">Loading...</span>
       <div
+        aria-hidden="true"
         style={{
           width: "40px",
           height: "40px",

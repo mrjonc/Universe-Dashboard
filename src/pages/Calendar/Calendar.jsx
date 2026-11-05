@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import styles from "./calendar.module.css";
 import { supabase } from "../../lib/supabaseClient";
 import { DAYS_IN_MONTH, MONTHS, WEEK_DAYS } from "./calendarConstants";
@@ -9,7 +9,15 @@ import AddShowModal from "../../components/modals/addShowModal.jsx";
 import ViewCardModal from "../../components/modals/viewCardModal.jsx";
 import BookingModal from "../../components/modals/bookingModal.jsx";
 import LoadingSpinner from "../../components/animations/LoadingSpinner.jsx";
-import { useAuth } from "../../context/AuthContext.jsx";
+import { useAuth } from "../../context/useAuth.js";
+
+const formatWrestlers = (rosterWrestlers) =>
+  rosterWrestlers
+    .map((wrestler) => ({
+      ...wrestler,
+      id: wrestler.superstar_id || wrestler.id,
+    }))
+    .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
 function Calendar() {
   const daysArray = Array.from({ length: DAYS_IN_MONTH }, (_, i) => i + 1);
@@ -23,6 +31,7 @@ function Calendar() {
   const [brands, setBrands] = useState([]);
   const [wrestlers, setWrestlers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -35,71 +44,70 @@ function Calendar() {
   const [matchesData, setMatchesData] = useState([]);
   const [segmentsData, setSegmentsData] = useState([]);
 
-  const formatWrestlers = (rosterWrestlers) =>
-    rosterWrestlers
-      .map((wrestler) => ({
-        ...wrestler,
-        id: wrestler.superstar_id || wrestler.id,
-      }))
-      .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-
-  useEffect(() => {
-    fetchInitialData();
-  }, [user]);
-
   const formatDateKey = (year, monthIdx, day) => {
     const formattedMonth = String(monthIdx + 1).padStart(2, "0");
     const formattedDay = String(day).padStart(2, "0");
     return `${year}-${formattedMonth}-${formattedDay}`;
   };
 
-  async function fetchInitialData() {
-    if (!user) return;
+  const fetchInitialData = useCallback(async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
+    setLoadError("");
 
-    const [showsRes, eventsRes, wrestlersRes] = await Promise.all([
-      supabase.from("shows").select("*").eq("user_id", user.id),
-      supabase.from("events").select("*"),
-      supabase
-        .from("user_superstars")
-        .select("id, superstar_id, name, image_url")
-        .eq("user_id", user.id),
-    ]);
+    try {
+      const [showsRes, eventsRes, wrestlersRes] = await Promise.all([
+        supabase.from("shows").select("*").eq("user_id", user.id),
+        supabase.from("events").select("*"),
+        supabase
+          .from("user_superstars")
+          .select("id, superstar_id, name, image_url")
+          .eq("user_id", user.id),
+      ]);
 
-    if (showsRes.error) {
-      console.error("Erro ao buscar shows:", showsRes.error.message);
-    }
-    if (eventsRes.error) {
-      console.error("Erro ao buscar eventos:", eventsRes.error.message);
-    }
-    if (wrestlersRes.error) {
-      console.error("Erro ao buscar lutadores:", wrestlersRes.error.message);
-    }
+      const queryError =
+        showsRes.error || eventsRes.error || wrestlersRes.error;
+      if (queryError) {
+        console.error("Failed to load calendar data:", queryError.message);
+        setLoadError("Could not load all calendar data.");
+      }
 
-    if (eventsRes.data) {
-      setBrands(eventsRes.data);
-    }
+      if (eventsRes.data) {
+        setBrands(eventsRes.data);
+      }
 
-    if (showsRes.data && eventsRes.data) {
-      const formattedShows = showsRes.data.map((show) => {
-        const eventId = show.brand_id || show.event_id;
-        const matchedEvent = eventsRes.data.find(
-          (e) => String(e.id) === String(eventId),
-        );
-        return {
-          ...show,
-          events: matchedEvent || null,
-        };
-      });
-      setShows(formattedShows);
-    }
+      if (showsRes.data && eventsRes.data) {
+        const formattedShows = showsRes.data.map((show) => {
+          const eventId = show.brand_id || show.event_id;
+          const matchedEvent = eventsRes.data.find(
+            (e) => String(e.id) === String(eventId),
+          );
+          return {
+            ...show,
+            events: matchedEvent || null,
+          };
+        });
+        setShows(formattedShows);
+      }
 
-    if (wrestlersRes.data) {
-      setWrestlers(formatWrestlers(wrestlersRes.data));
+      if (wrestlersRes.data) {
+        setWrestlers(formatWrestlers(wrestlersRes.data));
+      }
+    } catch (error) {
+      console.error("Unexpected error loading calendar:", error);
+      setLoadError("Could not load calendar data.");
+    } finally {
+      setLoading(false);
     }
+  }, [user]);
 
-    setLoading(false);
-  }
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
 
   const prevMonth = () => {
     if (currentMonthIndex > 0) {
@@ -151,7 +159,7 @@ function Calendar() {
       .select("*");
 
     if (error) {
-      alert("Erro ao criar show: " + error.message);
+      alert("Could not create show: " + error.message);
     } else if (data && data.length > 0) {
       const selectedEvent = brands.find(
         (b) => String(b.id) === String(targetBrandId),
@@ -167,9 +175,17 @@ function Calendar() {
   };
 
   const handleDeleteShow = async (showId) => {
-    const { error } = await supabase.from("shows").delete().eq("id", showId);
+    const show = shows.find((item) => item.id === showId);
+    const eventName = show?.events?.event_name || show?.events?.name || "this show";
+    if (!window.confirm(`Delete ${eventName} on ${show?.date}?`)) return;
+
+    const { error } = await supabase
+      .from("shows")
+      .delete()
+      .eq("id", showId)
+      .eq("user_id", user.id);
     if (error) {
-      alert("Erro ao excluir: " + error.message);
+      alert("Could not delete show: " + error.message);
     } else {
       setShows(shows.filter((s) => s.id !== showId));
     }
@@ -219,8 +235,8 @@ function Calendar() {
       .eq("user_id", user.id);
 
     if (wrestlersError) {
-      console.error("Erro ao atualizar lutadores do booking:", wrestlersError);
-      alert("Erro ao carregar lutadores: " + wrestlersError.message);
+      console.error("Failed to refresh booking roster:", wrestlersError);
+      alert("Could not load wrestlers: " + wrestlersError.message);
       return;
     }
 
@@ -240,6 +256,13 @@ function Calendar() {
           .eq("show_id", show.id)
           .order("segment_number", { ascending: true }),
       ]);
+
+      const cardError = matchesRes.error || segmentsRes.error;
+      if (cardError) {
+        console.error("Failed to load booking:", cardError.message);
+        alert("Could not load matches and segments for this show.");
+        return;
+      }
 
       if (matchesRes.data && matchesRes.data.length > 0) {
         setMatchesData(
@@ -405,8 +428,16 @@ function Calendar() {
     if (!activeShow) return;
 
     if (activeShow.is_booked) {
-      await supabase.from("matches").delete().eq("show_id", activeShow.id);
-      await supabase.from("segments").delete().eq("show_id", activeShow.id);
+      const [matchesDelete, segmentsDelete] = await Promise.all([
+        supabase.from("matches").delete().eq("show_id", activeShow.id),
+        supabase.from("segments").delete().eq("show_id", activeShow.id),
+      ]);
+      const deleteError = matchesDelete.error || segmentsDelete.error;
+      if (deleteError) {
+        console.error("Failed to replace show card:", deleteError.message);
+        alert("Could not replace the card. Check the show before trying again.");
+        return;
+      }
     }
 
     const matchesPayload = matchesData.map((m, idx) => {
@@ -434,7 +465,7 @@ function Calendar() {
     const segmentsPayload = segmentsData.map((s, idx) => ({
       show_id: activeShow.id,
       segment_number: idx + 1,
-      title: s.title || "Segmento",
+      title: s.title || "Segment",
       description: s.description || "",
       wrestler_ids: s.selected_wrestlers.filter(Boolean),
       user_id: user.id,
@@ -446,7 +477,7 @@ function Calendar() {
         .insert(matchesPayload);
 
       if (matchesError) {
-        alert("Erro ao salvar lutas: " + matchesError.message);
+        alert("Could not save matches: " + matchesError.message);
         return;
       }
     }
@@ -457,7 +488,7 @@ function Calendar() {
         .insert(segmentsPayload);
 
       if (segmentsError) {
-        alert("Erro ao salvar segmentos: " + segmentsError.message);
+        alert("Could not save segments: " + segmentsError.message);
         return;
       }
     }
@@ -471,7 +502,7 @@ function Calendar() {
       .eq("id", activeShow.id);
 
     if (showUpdateError) {
-      alert("Erro ao atualizar status do show: " + showUpdateError.message);
+      alert("Could not update show status: " + showUpdateError.message);
     } else {
       setShows(
         shows.map((s) =>
@@ -500,6 +531,13 @@ function Calendar() {
         .order("segment_number", { ascending: true }),
     ]);
 
+    const queryError = matchesRes.error || segmentsRes.error;
+    if (queryError) {
+      console.error("Failed to load show card:", queryError.message);
+      alert("Could not load this show's card.");
+      return;
+    }
+
     if (matchesRes.data) {
       const formattedMatches = matchesRes.data.map((m) => {
         const matchType = m.match_type || "1v1";
@@ -526,22 +564,40 @@ function Calendar() {
 
   if (loading)
     return (
-      <div style={{ textAlign: "center", padding: "2rem", color: "white" }}>
+      <div aria-busy="true" style={{ textAlign: "center", padding: "2rem", color: "white" }}>
         <LoadingSpinner />
       </div>
     );
 
   return (
     <>
-      <div className={styles.calendarContainer}>
+      <section
+        className={styles.calendarContainer}
+        aria-labelledby="calendar-title"
+      >
+        {loadError && (
+          <p role="alert" className={styles.loadError}>
+            {loadError}
+          </p>
+        )}
         <div className={styles.calendarHeader}>
-          <button onClick={prevMonth} style={{ color: "white" }}>
+          <button
+            type="button"
+            onClick={prevMonth}
+            style={{ color: "white" }}
+            aria-label="Previous month"
+          >
             <IoIosArrowBack />
           </button>
-          <h2>
+          <h1 id="calendar-title" aria-live="polite">
             {MONTHS[currentMonthIndex]} {currentYear}
-          </h2>
-          <button onClick={nextMonth} style={{ color: "white" }}>
+          </h1>
+          <button
+            type="button"
+            onClick={nextMonth}
+            style={{ color: "white" }}
+            aria-label="Next month"
+          >
             <IoIosArrowForward />
           </button>
         </div>
@@ -570,16 +626,25 @@ function Calendar() {
                 className={`${styles.dayCell} ${dayShow ? styles.hasShow : ""} ${
                   isSelected ? styles.selected : ""
                 }`}
-                onClick={() => setSelectedDay(dayNumber)}
+                role="group"
+                aria-label={`Day ${dayNumber} of ${MONTHS[currentMonthIndex]}${dayShow ? ", show scheduled" : ""}`}
               >
                 <div className={styles.dayHeader}>
-                  <span className={styles.dayNumber}>{dayNumber}</span>
+                  <button
+                    type="button"
+                    className={styles.selectDay}
+                    aria-label={`Select day ${dayNumber} of ${MONTHS[currentMonthIndex]}`}
+                    aria-pressed={isSelected}
+                    onClick={() => setSelectedDay(dayNumber)}
+                  >
+                    {dayNumber}
+                  </button>
                   {dayShow && (
                     <button
+                      type="button"
                       className={styles.deleteCardBtn}
-                      title="Excluir Show"
-                      onClick={(e) => {
-                        e.stopPropagation();
+                      aria-label={`Delete show on day ${dayNumber}`}
+                      onClick={() => {
                         handleDeleteShow(dayShow.id);
                       }}
                     >
@@ -603,24 +668,24 @@ function Calendar() {
                     )}
 
                     <small className={styles.matchesCount}>
-                      {dayShow.matches_count} LUTAS
+                      {dayShow.matches_count} MATCHES
                     </small>
 
                     {dayShow.is_booked ? (
                       <div className={styles.actionGroup}>
                         <button
+                          type="button"
                           className={styles.actionBtn}
-                          onClick={(e) => {
-                            e.stopPropagation();
+                          onClick={() => {
                             handleOpenViewModal(dayShow);
                           }}
                         >
-                          Exibition
+                          View
                         </button>
                         <button
+                          type="button"
                           className={`${styles.actionBtn} ${styles.editBtn}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
+                          onClick={() => {
                             handleOpenBookingModal(dayShow);
                           }}
                         >
@@ -629,21 +694,22 @@ function Calendar() {
                       </div>
                     ) : (
                       <button
+                        type="button"
                         className={styles.actionBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
+                        onClick={() => {
                           handleOpenBookingModal(dayShow);
                         }}
                       >
-                        Bookar
+                        Book
                       </button>
                     )}
                   </div>
                 ) : (
                   <button
+                    type="button"
                     className={styles.addShow}
                     onClick={() => handleOpenAddModal(dayNumber)}
-                    title="Adicionar Show"
+                    aria-label={`Add show on day ${dayNumber}`}
                   >
                     <TiPlus />
                   </button>
@@ -656,15 +722,17 @@ function Calendar() {
         {selectedDay && (
           <div
             className={styles.selectedInfo}
+            role="status"
+            aria-live="polite"
             style={{ color: "rgb(201, 197, 197)" }}
           >
-            Dia selecionado:{" "}
+            Selected day:{" "}
             <strong>
-              {selectedDay} de {MONTHS[currentMonthIndex]}
+              {selectedDay} {MONTHS[currentMonthIndex]}
             </strong>
           </div>
         )}
-      </div>
+      </section>
 
       {showAddModal && (
         <AddShowModal

@@ -3,22 +3,24 @@ import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import App from "./App.jsx";
-import Calendar from "./pages/Calendar/Calendar.jsx";
-import Roster from "./pages/Roster/Roster.jsx";
-import Champions from "./pages/Champions/Champions.jsx";
-import Login from "./pages/login_register/Login.jsx";
 import ProtectedRoute from "./components/ProtectedRouter.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
-import Register from "./pages/login_register/Register.jsx";
+import {
+  CalendarPage,
+  ChampionsPage,
+  LoginPage,
+  RegisterPage,
+  RosterPage,
+} from "./routePages.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/login",
-    element: <Login />,
+    element: <LoginPage />,
   },
   {
     path: "/register",
-    element: <Register />,
+    element: <RegisterPage />,
   },
   {
     path: "/",
@@ -30,15 +32,15 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <Calendar />,
+        element: <CalendarPage />,
       },
       {
         path: "/roster",
-        element: <Roster />,
+        element: <RosterPage />,
       },
       {
         path: "/champions",
-        element: <Champions />,
+        element: <ChampionsPage />,
       },
     ],
   },

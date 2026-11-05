@@ -23,8 +23,8 @@ export default function TagTeamCard({
         .eq("id", team.id);
 
       if (error) {
-        console.log("Erro ao atualizar a brand da tag/stable", error.message);
-        alert("Erro ao atualizar a brand");
+        console.error("Failed to update tag team brand:", error.message);
+        alert("Could not update tag team's brand.");
       } else {
         const newBrandTeamObj = brands.find(
           (b) => String(b.id) === String(newBrandTeamId),
@@ -35,7 +35,8 @@ export default function TagTeamCard({
         }
       }
     } catch (err) {
-      console.error("Erro inesperado: ", err);
+      console.error("Unexpected tag team error:", err);
+      alert("Could not update tag team's brand.");
     } finally {
       setUpdatingTeam(false);
     }
@@ -46,17 +47,19 @@ export default function TagTeamCard({
   const members = team.members || [];
 
   const handleDeleteTeam = async (teamId) => {
-    if (!confirm("Tem certeza que deseja apagar esta tag/stable?")) return;
+    if (!window.confirm(`Delete ${team.name}?`)) return;
 
-    const { error } = await supabase
-      .from("tag_teams")
-      .delete()
-      .eq("id", teamId);
+    try {
+      const { error } = await supabase
+        .from("tag_teams")
+        .delete()
+        .eq("id", teamId);
 
-    if (error) {
-      alert("Erro ao excluir: " + error.message);
-    } else if (onDeleteTeam) {
-      onDeleteTeam(teamId);
+      if (error) throw error;
+      if (onDeleteTeam) onDeleteTeam(teamId);
+    } catch (error) {
+      console.error("Failed to delete tag team:", error);
+      alert("Could not delete tag team.");
     }
   };
 
@@ -96,7 +99,7 @@ export default function TagTeamCard({
             ))}
           </div>
         ) : (
-          <span className={styles.noImageText}>Sem Imagem</span>
+          <span className={styles.noImageText}>No image</span>
         )}
       </div>
 
@@ -105,6 +108,7 @@ export default function TagTeamCard({
       <div className={styles.controlsContainer}>
         <div className={styles.actionsRow}>
           <select
+            aria-label={`Brand for ${team.name}`}
             value={currentBrandTeamId}
             onChange={handleBrandChangeTeam}
             disabled={updatingTeam}
@@ -120,7 +124,8 @@ export default function TagTeamCard({
 
           <button
             type="button"
-            title="Editar"
+            title="Edit"
+            aria-label={`Edit ${team.name}`}
             className={styles.editButton}
             onClick={() => onEditTeam && onEditTeam(team)}
           >
@@ -129,7 +134,8 @@ export default function TagTeamCard({
 
           <button
             type="button"
-            title="Excluir"
+            title="Delete"
+            aria-label={`Delete ${team.name}`}
             className={styles.deleteButton}
             onClick={() => handleDeleteTeam(team.id)}
           >

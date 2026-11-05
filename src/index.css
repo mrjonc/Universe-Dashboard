@@ -1,11 +1,71 @@
-@import url("https://fonts.googleapis.com/css2?family=Anton&display=swap");
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
 
 html {
   background-color: rgb(56, 53, 53);
+  color-scheme: dark;
 }
 
-* {
-  font-family:
-    "Anton", Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
-  letter-spacing: 0.5px; /* Mantém o espaçamento legal */
+body {
+  margin: 0;
+  color: #fff;
+  font-family: system-ui, "Segoe UI", sans-serif;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid #ffd166;
+  outline-offset: 3px;
+}
+
+.skipLink {
+  position: absolute;
+  z-index: 2000;
+  top: 0.5rem;
+  left: 0.5rem;
+  padding: 0.75rem 1rem;
+  transform: translateY(-160%);
+  background: #fff;
+  color: #111;
+  border-radius: 0.25rem;
+}
+
+.skipLink:focus {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

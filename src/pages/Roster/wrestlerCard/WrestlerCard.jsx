@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { supabase } from "../../../lib/supabaseClient.js";
 import { RiDeleteBin2Line, RiEditLine } from "react-icons/ri";
 import styles from "./wrestlerCard.module.css";
 
@@ -17,26 +16,13 @@ export default function WrestlerCard({
     setUpdating(true);
 
     try {
-      // CORREÇÃO: Apontar para 'user_superstars' usando o id do registro do usuário
-      const { error } = await supabase
-        .from("user_superstars")
-        .update({ brand_id: newBrandId })
-        .eq("id", wrestler.id);
-
-      if (error) {
-        console.log("Erro ao atualizar a brand do lutador", error.message);
-        alert("Erro ao atualizar a brand.");
-      } else {
-        const newBrandObj = brands.find(
-          (b) => String(b.id) === String(newBrandId),
-        );
-
-        if (onUpdateBrand) {
-          onUpdateBrand(wrestler.id, newBrandId, newBrandObj);
-        }
-      }
+      const newBrandObj = brands.find(
+        (b) => String(b.id) === String(newBrandId),
+      );
+      await onUpdateBrand(wrestler.id, newBrandId, newBrandObj);
     } catch (err) {
-      console.error("Erro inesperado: ", err);
+      console.error("Failed to update wrestler brand:", err);
+      alert("Could not update wrestler's brand.");
     } finally {
       setUpdating(false);
     }
@@ -45,24 +31,14 @@ export default function WrestlerCard({
   const currentBrandId = wrestler.brand_id || wrestler.brands?.id || "";
 
   const handleDeleteWrestler = async (wrestlerRecordId) => {
-    if (!confirm("Tem certeza que deseja apagar este lutador do seu roster?"))
+    if (!window.confirm(`Delete ${wrestler.name} from your roster?`))
       return;
 
     try {
-      // CORREÇÃO: Deleta diretamente da tabela do usuário (user_superstars)
-      const { error } = await supabase
-        .from("user_superstars")
-        .delete()
-        .eq("id", wrestlerRecordId);
-
-      if (error) {
-        alert("Erro ao excluir: " + error.message);
-        console.error(error);
-      } else {
-        if (onDelete) onDelete(wrestlerRecordId);
-      }
+      await onDelete(wrestlerRecordId);
     } catch (err) {
-      console.error("Erro ao excluir lutador:", err);
+      console.error("Failed to delete wrestler:", err);
+      alert("Could not delete wrestler.");
     }
   };
 
@@ -71,7 +47,7 @@ export default function WrestlerCard({
       <div className={styles.imageWrapper}>
         <img
           src={wrestler.image_url}
-          alt={wrestler.name}
+          alt={wrestler.image_url ? wrestler.name : ""}
           className={styles.wrestlerImage}
         />
       </div>
@@ -82,6 +58,7 @@ export default function WrestlerCard({
         <div className={styles.controlsContainer}>
           <div className={styles.actionsRow}>
             <select
+              aria-label={`Brand for ${wrestler.name}`}
               value={currentBrandId}
               onChange={handleBrandChange}
               disabled={updating}
@@ -97,7 +74,8 @@ export default function WrestlerCard({
 
             <button
               type="button"
-              title="Editar"
+              title="Edit"
+              aria-label={`Edit ${wrestler.name}`}
               className={styles.editButton}
               onClick={() => {
                 if (onEdit) {
@@ -110,7 +88,8 @@ export default function WrestlerCard({
 
             <button
               type="button"
-              title="Excluir"
+              title="Delete"
+              aria-label={`Delete ${wrestler.name}`}
               className={styles.deleteButton}
               onClick={() => handleDeleteWrestler(wrestler.id)}
             >

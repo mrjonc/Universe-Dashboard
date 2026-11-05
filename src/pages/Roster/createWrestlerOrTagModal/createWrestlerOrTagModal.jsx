@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabaseClient.js";
 import styles from "./createWrestlerOrTagModal.module.css";
+import AccessibleDialog from "../../../components/modals/AccessibleDialog.jsx";
 
 export default function CreateWrestlerOrTagModal({
   brands = [],
@@ -66,7 +67,7 @@ export default function CreateWrestlerOrTagModal({
         } = await supabase.auth.getUser();
 
         if (userError || !user) {
-          throw new Error("Usuario não autenticado");
+          throw new Error("User is not authenticated.");
         }
 
         const payload = {
@@ -146,19 +147,23 @@ export default function CreateWrestlerOrTagModal({
 
       onSuccess();
     } catch (err) {
-      console.error("Erro ao salvar:", err);
-      alert("Erro ao salvar: " + err.message);
+      console.error("Failed to save roster item:", err);
+      alert("Could not save: " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <h3 className={styles.title}>
+    <AccessibleDialog
+      overlayClassName={styles.overlay}
+      contentClassName={styles.modal}
+      titleId="roster-item-title"
+      onClose={onClose}
+    >
+        <h3 id="roster-item-title" className={styles.title}>
           {isEditing
-            ? `Editar ${type === "wrestler" ? "Superstar" : "Tag Team"}`
+            ? `Edit ${type === "wrestler" ? "Superstar" : "Tag Team"}`
             : "Create"}
         </h3>
 
@@ -166,6 +171,7 @@ export default function CreateWrestlerOrTagModal({
           <div className={styles.typeSelector}>
             <button
               type="button"
+              aria-pressed={type === "wrestler"}
               onClick={() => setType("wrestler")}
               className={`${styles.typeButton} ${
                 type === "wrestler" ? styles.typeButtonActive : ""
@@ -175,6 +181,7 @@ export default function CreateWrestlerOrTagModal({
             </button>
             <button
               type="button"
+              aria-pressed={type === "tagteam"}
               onClick={() => setType("tagteam")}
               className={`${styles.typeButton} ${
                 type === "tagteam" ? styles.typeButtonActive : ""
@@ -187,8 +194,9 @@ export default function CreateWrestlerOrTagModal({
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div>
-            <label className={styles.label}>Name</label>
+            <label className={styles.label} htmlFor="roster-item-name">Name</label>
             <input
+              id="roster-item-name"
               type="text"
               required
               value={name}
@@ -198,9 +206,11 @@ export default function CreateWrestlerOrTagModal({
           </div>
 
           <div>
-            <label className={styles.label}>Image URL</label>
+            <label className={styles.label} htmlFor="roster-item-image">Image URL</label>
             <input
+              id="roster-item-image"
               type="text"
+              inputMode="url"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
               className={styles.input}
@@ -208,8 +218,9 @@ export default function CreateWrestlerOrTagModal({
           </div>
 
           <div>
-            <label className={styles.label}>Brand</label>
+            <label className={styles.label} htmlFor="roster-item-brand">Brand</label>
             <select
+              id="roster-item-brand"
               value={brandId}
               onChange={(e) => setBrandId(e.target.value)}
               className={styles.select}
@@ -225,21 +236,18 @@ export default function CreateWrestlerOrTagModal({
 
           {type === "tagteam" && (
             <div>
-              <label
-                className={styles.label}
-                style={{ marginBottom: "0.5rem" }}
-              >
-                Tag/Stable Members
-              </label>
+              <fieldset className={styles.membersFieldset}>
+                <legend className={styles.label}>Tag team members</legend>
 
               {selectedMembers.map((memberId, idx) => (
                 <div key={idx} className={styles.memberRow}>
                   <select
+                    aria-label={`Member ${idx + 1}`}
                     value={memberId}
                     onChange={(e) => handleMemberChange(idx, e.target.value)}
                     className={styles.select}
                   >
-                    <option value="">(Select A Wrestler)</option>
+                    <option value="">(Select a wrestler)</option>
                     {wrestlers
                       .slice()
                       .sort((a, b) => a.name.localeCompare(b.name))
@@ -253,10 +261,11 @@ export default function CreateWrestlerOrTagModal({
                   {selectedMembers.length > 1 && (
                     <button
                       type="button"
+                      aria-label={`Remove member ${idx + 1}`}
                       onClick={() => handleRemoveMemberSlot(idx)}
                       className={styles.removeMemberButton}
                     >
-                      X
+                      Remove
                     </button>
                   )}
                 </div>
@@ -267,8 +276,9 @@ export default function CreateWrestlerOrTagModal({
                 onClick={handleAddMemberSlot}
                 className={styles.addMemberButton}
               >
-                + Add A Member
+                + Add a member
               </button>
+              </fieldset>
             </div>
           )}
 
@@ -278,7 +288,7 @@ export default function CreateWrestlerOrTagModal({
               disabled={loading}
               className={styles.submitButton}
             >
-              {loading ? "Saving..." : isEditing ? "Atualizar" : "Create"}
+              {loading ? "Saving..." : isEditing ? "Update" : "Create"}
             </button>
             <button
               type="button"
@@ -290,7 +300,6 @@ export default function CreateWrestlerOrTagModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </AccessibleDialog>
   );
 }

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../lib/supabaseClient.js";
-import { useAuth } from "../../../context/AuthContext.jsx";
+import { useAuth } from "../../../context/useAuth.js";
 import styles from "./changeTheChampionModal.module.css";
+import AccessibleDialog from "../../../components/modals/AccessibleDialog.jsx";
 
 function EditChampionModal({ title, onClose, onSuccess }) {
   const { user } = useAuth();
@@ -9,24 +10,33 @@ function EditChampionModal({ title, onClose, onSuccess }) {
   const [optionsList, setOptionsList] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     async function fetchOptions() {
-      if (!title) return;
-
-      const isTag = title.champion_type === "tagteam";
-      const tableToFetch = isTag ? "tag_teams" : "superstars";
-
-      const { data, error } = await supabase
-        .from(tableToFetch)
-        .select("id, name");
-
-      if (error) {
-        console.error("Erro ao carregar opções:", error.message);
-      } else {
-        setOptionsList(data || []);
+      if (!title) {
+        setLoadingOptions(false);
+        return;
       }
-      setLoadingOptions(false);
+
+      try {
+        setLoadingOptions(true);
+        setErrorMessage("");
+        const isTag = title.champion_type === "tagteam";
+        const tableToFetch = isTag ? "tag_teams" : "superstars";
+
+        const { data, error } = await supabase
+          .from(tableToFetch)
+          .select("id, name");
+
+        if (error) throw error;
+        setOptionsList(data || []);
+      } catch (error) {
+        console.error("Failed to load champion options:", error.message);
+        setErrorMessage("Could not load champion options.");
+      } finally {
+        setLoadingOptions(false);
+      }
     }
 
     fetchOptions();
@@ -37,53 +47,60 @@ function EditChampionModal({ title, onClose, onSuccess }) {
     if (!selectedChampionId || !title || !user) return;
 
     setSaving(true);
-    const isTag = title.champion_type === "tagteam";
+    setErrorMessage("");
+    try {
+      const isTag = title.champion_type === "tagteam";
+      const upsertPayload = {
+        user_id: user.id,
+        championship_id: title.id,
+        champion_id: isTag ? null : selectedChampionId,
+        tag_champion_id: isTag ? selectedChampionId : null,
+      };
 
-    // Prepara os dados que serão salvos na tabela isolada do usuário
-    const upsertPayload = {
-      user_id: user.id,
-      championship_id: title.id,
-      champion_id: isTag ? null : selectedChampionId,
-      tag_champion_id: isTag ? selectedChampionId : null,
-    };
+      const { error } = await supabase
+        .from("user_championships")
+        .upsert(upsertPayload, { onConflict: "user_id, championship_id" });
+      if (error) throw error;
 
-    // Salva na tabela user_championships usando upsert (insere se não existir, atualiza se já existir)
-    const { error } = await supabase
-      .from("user_championships")
-      .upsert(upsertPayload, { onConflict: "user_id, championship_id" });
-
-    setSaving(false);
-
-    if (error) {
-      console.error("Erro ao trocar campeão:", error.message);
-      alert("Erro ao atualizar o campeão.");
-    } else {
       onSuccess();
       onClose();
+    } catch (error) {
+      console.error("Failed to change champion:", error);
+      setErrorMessage("Could not update the champion.");
+    } finally {
+      setSaving(false);
     }
   };
 
   if (!title) return null;
 
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modalContent}>
-        <h3>Trocar Campeão</h3>
+    <AccessibleDialog
+      overlayClassName={styles.modalOverlay}
+      contentClassName={styles.modalContent}
+      titleId="change-champion-title"
+      onClose={onClose}
+    >
+        <h3 id="change-champion-title">Change champion</h3>
         <p className={styles.subtitle}>{title.title_name}</p>
 
+        {errorMessage && <p role="alert">{errorMessage}</p>}
         {loadingOptions ? (
-          <p>Carregando opções...</p>
+          <p>Loading options...</p>
         ) : (
           <form onSubmit={handleSubmit}>
-            <label className={styles.label}>Select the new champion:</label>
+            <label className={styles.label} htmlFor="new-champion">
+              Select the new champion:
+            </label>
 
             <select
+              id="new-champion"
               value={selectedChampionId}
               onChange={(e) => setSelectedChampionId(e.target.value)}
               required
               className={styles.selectInput}
             >
-              <option value="">-- Select the wrestler --</option>
+              <option value="">-- Select a champion --</option>
               {optionsList
                 .slice()
                 .sort((a, b) => a.name.localeCompare(b.name))
@@ -105,7 +122,7 @@ function EditChampionModal({ title, onClose, onSuccess }) {
               </button>
               <button
                 type="submit"
-                disabled={saving}
+                disabled={saving || !optionsList.length}
                 className={styles.submitButton}
               >
                 {saving ? "Saving..." : "Save"}
@@ -113,8 +130,7 @@ function EditChampionModal({ title, onClose, onSuccess }) {
             </div>
           </form>
         )}
-      </div>
-    </div>
+    </AccessibleDialog>
   );
 }
 

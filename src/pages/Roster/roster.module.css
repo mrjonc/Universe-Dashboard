@@ -19,7 +19,7 @@
 }
 
 /* ===================================
-   Abas e Botões Superiores
+   Tabs and top-level buttons
    =================================== */
 .tabsContainer {
   display: flex;
@@ -78,7 +78,7 @@
 }
 
 /* ===================================
-   Estrutura das Seções e Cabeçalhos
+   Section and heading layout
    =================================== */
 .section {
   margin-bottom: 3.5rem;

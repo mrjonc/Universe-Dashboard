@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext.jsx";
+import { useAuth } from "../../context/useAuth.js";
 import styles from "./login.module.css";
 
 export default function Register() {
@@ -18,12 +18,12 @@ export default function Register() {
     setError(null);
 
     if (password.length < 6) {
-      setError("A senha deve ter pelo menos 6 caracteres.");
+      setError("Password must be at least 6 characters.");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("As senhas não coincidem!");
+      setError("Passwords do not match.");
       return;
     }
 
@@ -32,40 +32,50 @@ export default function Register() {
     try {
       await signUp(email.trim(), password);
       alert(
-        "Cadastro realizado! Verifique seu e-mail caso seja necessária a confirmação.",
+        "Account created. Check your email if confirmation is required.",
       );
       navigate("/login");
     } catch (err) {
-      setError(err.message || "Erro ao realizar cadastro.");
+      setError(err.message || "Could not create your account.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className={styles.container}>
-      <form onSubmit={handleRegister} className={styles.formCard}>
-        <h2 className={styles.title}>CRIAR CONTA</h2>
+    <main className={styles.container}>
+      <form
+        onSubmit={handleRegister}
+        className={styles.formCard}
+        aria-busy={loading}
+      >
+        <h1 className={styles.title}>CREATE ACCOUNT</h1>
 
-        {error && <p className={styles.errorMessage}>{error}</p>}
+        {error && (
+          <p className={styles.errorMessage} role="alert">
+            {error}
+          </p>
+        )}
 
         <div className={styles.inputGroup}>
           <label htmlFor="email">E-mail</label>
           <input
             id="email"
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            placeholder="seu@email.com"
+            placeholder="you@email.com"
           />
         </div>
 
         <div className={styles.inputGroup}>
-          <label htmlFor="password">Senha</label>
+          <label htmlFor="password">Password</label>
           <input
             id="password"
             type="password"
+            autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -74,10 +84,11 @@ export default function Register() {
         </div>
 
         <div className={styles.inputGroup}>
-          <label htmlFor="confirmPassword">Confirmar Senha</label>
+          <label htmlFor="confirmPassword">Confirm password</label>
           <input
             id="confirmPassword"
             type="password"
+            autoComplete="new-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
@@ -90,13 +101,13 @@ export default function Register() {
           disabled={loading}
           className={styles.submitButton}
         >
-          {loading ? "Cadastrando..." : "Cadastrar"}
+          {loading ? "Creating account..." : "Create account"}
         </button>
 
         <p className={styles.switchText}>
-          Já tem uma conta? <Link to="/login">Faça Login</Link>
+          Already have an account? <Link to="/login">Log in</Link>
         </p>
       </form>
-    </div>
+    </main>
   );
 }

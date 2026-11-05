@@ -1,6 +1,5 @@
-import React from "react";
-// import styles from "./calendar.module.css";
 import styles from "./CalendarModal.module.css";
+import AccessibleDialog from "./AccessibleDialog.jsx";
 
 export default function ViewCardModal({
   activeShow,
@@ -10,7 +9,7 @@ export default function ViewCardModal({
   onClose,
   onEdit,
 }) {
-  // Helper para buscar nome do lutador por ID
+  // Resolve a wrestler name from its ID.
   const getWrestlerName = (wrestlerId, wrestlersList) => {
     if (!wrestlerId) return "";
     const w = wrestlersList?.find(
@@ -19,11 +18,11 @@ export default function ViewCardModal({
     return w ? w.name : "Desconhecido";
   };
 
-  // Renderiza os participantes da luta de acordo com a estrutura do banco/estado
+  // Render participants according to the stored match structure.
   const renderMatchParticipants = (match) => {
     const type = match.match_type || "1v1";
 
-    // Caso 1: Royal Rumble / Battle Royal
+    // Royal Rumble / Battle Royal.
     if (type.startsWith("rumble_") || match.participants?.length > 0) {
       const parts = match.participants || match.wrestler_ids || [];
       return (
@@ -38,7 +37,7 @@ export default function ViewCardModal({
       );
     }
 
-    // Caso 2: Lutas por Lados (team_a, team_b, team_c, team_d, team_e, team_f)
+    // Team-based match format.
     const teamsKeys = [
       "team_a",
       "team_b",
@@ -64,7 +63,7 @@ export default function ViewCardModal({
       return <span>{activeTeams.join(" vs ")}</span>;
     }
 
-    // Fallback: se houver wrestler_ids sem divisão de time (ex: 1v1 salvo direto)
+    // Fallback for wrestlers saved without team assignments.
     if (match.wrestler_ids && match.wrestler_ids.length >= 2) {
       const w1 = getWrestlerName(match.wrestler_ids[0], wrestlers);
       const w2 = getWrestlerName(match.wrestler_ids[1], wrestlers);
@@ -75,25 +74,21 @@ export default function ViewCardModal({
       );
     }
 
-    return <em>Sem lutadores definidos</em>;
+    return <em>No wrestlers assigned</em>;
   };
 
   return (
-    <div className={styles.modalOverlay}>
-      <div
-        className={styles.modalContent}
-        style={{
-          backgroundColor: "#383535",
-          color: "white",
-        }}
-      >
-        <h3 style={{ display: "flex", justifyContent: "center" }}>
-          {activeShow?.events?.event_name || "Card do Show"}
+    <AccessibleDialog
+      overlayClassName={styles.modalOverlay}
+      contentClassName={styles.modalContent}
+      titleId="show-card-title"
+      onClose={onClose}
+    >
+        <h3 id="show-card-title" style={{ display: "flex", justifyContent: "center" }}>
+          {activeShow?.events?.event_name || "Show card"}
         </h3>
 
-        <h4 style={{ display: "flex", justifyContent: "center" }}>
-          ---------- MATCHES ----------
-        </h4>
+        <h4 style={{ display: "flex", justifyContent: "center" }}>MATCHES</h4>
         {matchesData && matchesData.length > 0 ? (
           matchesData.map((match, idx) => (
             <div
@@ -117,10 +112,10 @@ export default function ViewCardModal({
             </div>
           ))
         ) : (
-          <p>No matches scheduled</p>
+          <p>No matches scheduled.</p>
         )}
 
-        <h4>--- SEGMENTS ---</h4>
+        <h4>SEGMENTS</h4>
         {segmentsData && segmentsData.length > 0 ? (
           segmentsData.map((seg, idx) => {
             const segmentWrestlers =
@@ -136,7 +131,7 @@ export default function ViewCardModal({
                   padding: "10px",
                 }}
               >
-                <h5>{seg.title || `Segmento ${idx + 1}`}</h5>
+                <h5>{seg.title || `Segment ${idx + 1}`}</h5>
                 {seg.description && <p>{seg.description}</p>}
                 {segmentWrestlers.length > 0 && (
                   <p>
@@ -163,10 +158,9 @@ export default function ViewCardModal({
             justifyContent: "flex-end",
           }}
         >
-          {onEdit && <button onClick={onEdit}>Edit Card</button>}
-          <button onClick={onClose}>Close</button>
+          {onEdit && <button type="button" onClick={onEdit}>Edit card</button>}
+          <button type="button" onClick={onClose}>Close</button>
         </div>
-      </div>
-    </div>
+    </AccessibleDialog>
   );
 }

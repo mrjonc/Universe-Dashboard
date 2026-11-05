@@ -14,7 +14,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Header do Calendário */
+/* Calendar header */
 .calendarHeader {
   display: flex;
   align-items: center;
@@ -53,7 +53,7 @@
   transform: translateY(-1px);
 }
 
-/* Dias da Semana */
+/* Weekdays */
 .calendarWeekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -65,14 +65,14 @@
   text-transform: uppercase;
 }
 
-/* Grid do Calendário */
+/* Calendar grid */
 .calendarDays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 6px;
 }
 
-/* Célula do Dia */
+/* Day cell */
 .dayCell {
   position: relative;
   aspect-ratio: 1;
@@ -93,7 +93,7 @@
   background: #282325;
 }
 
-/* Quando o dia tem show gravado/agendado */
+/* Day with a saved or scheduled show */
 .dayCell.hasShow {
   background: linear-gradient(180deg, #2a2224 0%, #1a1415 100%);
   border: 1px solid rgba(229, 25, 45, 0.4);
@@ -105,7 +105,7 @@
   box-shadow: 0 0 8px rgba(229, 25, 45, 0.6);
 }
 
-/* Cabeçalho interno do Card (Número + X) */
+/* Card header (number and close button) */
 .dayHeader {
   display: flex;
   justify-content: space-between;
@@ -114,14 +114,26 @@
   height: 16px;
 }
 
-.dayNumber {
-  font-size: 0.85rem;
+.selectDay {
+  min-width: 1.75rem;
+  min-height: 1.75rem;
+  padding: 0.1rem;
+  border: 0;
+  border-radius: 0.25rem;
+  background: transparent;
   color: #a0a0a0;
+  cursor: pointer;
+  font-size: 0.85rem;
   font-family: sans-serif;
   font-weight: 700;
 }
 
-.hasShow .dayNumber {
+.selectDay[aria-pressed="true"] {
+  background: #d7182a;
+  color: #fff;
+}
+
+.hasShow .selectDay {
   color: #fff;
 }
 
@@ -144,7 +156,7 @@
   transform: scale(1.2);
 }
 
-/* Conteúdo do Show */
+/* Show content */
 .showContent {
   display: flex;
   flex-direction: column;
@@ -171,7 +183,7 @@
   font-weight: 600;
 }
 
-/* Botões dentro do Card */
+/* Card buttons */
 .actionGroup {
   display: flex;
   gap: 3px;
@@ -207,7 +219,7 @@
   background: #444;
 }
 
-/* Botão de Adicionar Show (+) */
+/* Add show button (+) */
 .addShow {
   margin: auto;
   background: rgba(255, 255, 255, 0.03) !important;
@@ -232,7 +244,7 @@
   transform: scale(1.1);
 }
 
-/* Info do dia selecionado no rodapé */
+/* Selected-day details in the footer */
 .selectedInfo {
   margin-top: 1rem;
   text-align: center;
@@ -271,7 +283,7 @@
 }
 
 /* ===================================
-   RESPONSIVIDADE MOBILE (Ajuste dos Botões)
+   Mobile responsiveness (button layout)
    =================================== */
 @media (max-width: 480px) {
   .calendarContainer {
@@ -303,12 +315,20 @@
     height: 12px;
   }
 
-  .dayNumber {
+  .selectDay {
     font-size: 0.7rem;
   }
 
   .deleteCardBtn {
     font-size: 11px !important;
+  }
+
+  .loadError {
+    margin: 0 0 1rem;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid #ff6b6b;
+    background: #2a1719;
+    color: #fff;
   }
 
   .brandIcon {
@@ -320,7 +340,7 @@
     font-size: 0.5rem;
   }
 
-  /* Empilha os botões no mobile para não estourar a célula */
+  /* Stack buttons on mobile to keep them inside the cell */
   .actionGroup {
     flex-direction: column;
     gap: 1px;

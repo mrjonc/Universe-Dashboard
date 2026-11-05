@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext.jsx";
+import { useAuth } from "../../context/useAuth.js";
 import styles from "./login.module.css";
 
 export default function Login() {
@@ -21,36 +21,46 @@ export default function Login() {
       await login(email, password);
       navigate("/");
     } catch (err) {
-      setError(err.message || "Falha no login. Verifique seu e-mail e senha.");
+      setError(err.message || "Login failed. Check your email and password.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className={styles.container}>
-      <form onSubmit={handleSubmit} className={styles.formCard}>
-        <h2 className={styles.title}>LOGIN</h2>
+    <main className={styles.container}>
+      <form
+        onSubmit={handleSubmit}
+        className={styles.formCard}
+        aria-busy={loading}
+      >
+        <h1 className={styles.title}>LOGIN</h1>
 
-        {error && <p className={styles.errorMessage}>{error}</p>}
+        {error && (
+          <p className={styles.errorMessage} role="alert">
+            {error}
+          </p>
+        )}
 
         <div className={styles.inputGroup}>
           <label htmlFor="email">E-mail</label>
           <input
             id="email"
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            placeholder="seu@email.com"
+            placeholder="you@email.com"
           />
         </div>
 
         <div className={styles.inputGroup}>
-          <label htmlFor="password">Senha</label>
+          <label htmlFor="password">Password</label>
           <input
             id="password"
             type="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -59,7 +69,7 @@ export default function Login() {
         </div>
 
         <p>
-          Não tem uma conta? <Link to="/register">Cadastre-se</Link>
+          Don't have an account? <Link to="/register">Sign up</Link>
         </p>
 
         <button
@@ -67,9 +77,9 @@ export default function Login() {
           disabled={loading}
           className={styles.submitButton}
         >
-          {loading ? "Entrando..." : "Entrar"}
+          {loading ? "Signing in..." : "Sign in"}
         </button>
       </form>
-    </div>
+    </main>
   );
 }

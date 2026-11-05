@@ -14,18 +14,20 @@ export default function Roster() {
   const [brands, setBrands] = useState([]);
   const [tagTeams, setTagTeams] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemToEdit, setItemToEdit] = useState(null);
 
   const fetchRosterData = async () => {
     setLoading(true);
+    setLoadError("");
     try {
       const {
         data: { user },
         error: userError,
       } = await supabase.auth.getUser();
       if (userError || !user) {
-        console.error("Usuário não autenticado");
+        console.error("User is not authenticated.");
         setLoading(false);
         return;
       }
@@ -35,30 +37,30 @@ export default function Roster() {
         getTagTeams(),
       ]);
 
-      if (brandsRes.error)
-        console.error("Erro ao buscar brands:", brandsRes.error.message);
-      else setBrands(brandsRes.data || []);
+      if (brandsRes.error) throw brandsRes.error;
+      setBrands(brandsRes.data || []);
 
       setTagTeams(teamsData || []);
 
-      // 1. Busca os lutadores do usuário
+      // Load this user's wrestlers.
       let { data: userSuperstars, error: userSupErr } = await supabase
         .from("user_superstars")
         .select(`*, brands (id, name, image_url)`)
         .eq("user_id", user.id);
 
       if (userSupErr) {
-        console.error("Erro ao buscar user_superstars:", userSupErr.message);
+        throw userSupErr;
       }
 
-      // 2. Se estiver vazio, fazemos o seed garantindo que não há duplicidade pelo superstar_id
+      // Seed the user's roster if it is empty, avoiding duplicate superstar IDs.
       if (!userSuperstars || userSuperstars.length === 0) {
         const { data: globalSuperstars, error: globalErr } = await supabase
           .from("superstars")
           .select("*");
 
-        if (!globalErr && globalSuperstars && globalSuperstars.length > 0) {
-          // Mapeia tirando eventuais duplicatas do global por garantia
+        if (globalErr) throw globalErr;
+        if (globalSuperstars && globalSuperstars.length > 0) {
+          // Remove any duplicate records from the global roster.
           const uniqueGlobal = Array.from(
             new Map(globalSuperstars.map((s) => [s.id, s])).values(),
           );
@@ -77,24 +79,22 @@ export default function Roster() {
             .select(`*, brands (id, name, image_url)`);
 
           if (insertErr) {
-            console.error(
-              "Erro ao popular user_superstars:",
-              insertErr.message,
-            );
+            throw insertErr;
           } else {
             userSuperstars = insertedData;
           }
         }
       }
 
-      // Ordena alfabeticamente pelo nome antes de salvar no estado
+      // Sort names alphabetically before updating state.
       if (userSuperstars && userSuperstars.length > 0) {
         userSuperstars.sort((a, b) => a.name.localeCompare(b.name));
       }
 
       setWrestlers(userSuperstars || []);
     } catch (err) {
-      console.error("Erro ao carregar dados do roster:", err);
+      console.error("Failed to load roster data:", err);
+      setLoadError("Could not load the roster.");
     } finally {
       setLoading(false);
     }
@@ -121,18 +121,18 @@ export default function Roster() {
 
   const handleUpdateWrestlerBrand = useCallback(
     async (wrestlerId, newBrandId, newBrandObj) => {
-      // Atualiza no banco do usuário
+      // Update the user's database record.
       const { error } = await supabase
         .from("user_superstars")
         .update({ brand_id: newBrandId })
         .eq("id", wrestlerId);
 
       if (error) {
-        console.error("Erro ao atualizar brand no banco:", error.message);
-        return;
+        console.error("Failed to update wrestler brand:", error.message);
+        throw error;
       }
 
-      // Atualiza no estado local e mantém em ordem alfabética
+      // Update local state and keep it alphabetically sorted.
       setWrestlers((prev) => {
         const updated = prev.map((w) =>
           w.id === wrestlerId
@@ -159,14 +159,15 @@ export default function Roster() {
   );
 
   const handleDeleteWrestler = useCallback(async (id) => {
-    // Deleta do banco do usuário
+    // Delete from the user's roster.
     const { error } = await supabase
       .from("user_superstars")
       .delete()
       .eq("id", id);
 
     if (error) {
-      console.error("Erro ao deletar lutador:", error.message);
+      console.error("Failed to delete wrestler:", error.message);
+      alert("Could not delete wrestler.");
       return;
     }
 
@@ -203,10 +204,13 @@ export default function Roster() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>ROSTER</h2>
+      <h1 className={styles.title}>ROSTER</h1>
+      {loadError && <p role="alert">{loadError}</p>}
 
-      <div className={styles.tabsContainer}>
+      <div className={styles.tabsContainer} role="group" aria-label="Roster type">
         <button
+          type="button"
+          aria-pressed={activeTab === "superstars"}
           onClick={() => setActiveTab("superstars")}
           className={`${styles.tabButton} ${
             activeTab === "superstars" ? styles.tabButtonActive : ""
@@ -216,6 +220,8 @@ export default function Roster() {
         </button>
 
         <button
+          type="button"
+          aria-pressed={activeTab === "tagteams"}
           onClick={() => setActiveTab("tagteams")}
           className={`${styles.tabButton} ${
             activeTab === "tagteams" ? styles.tabButtonActive : ""
@@ -225,6 +231,9 @@ export default function Roster() {
         </button>
 
         <button
+          type="button"
+          aria-label="Add wrestler or tag team"
+          title="Add wrestler or tag team"
           onClick={() => {
             setItemToEdit(null);
             setIsModalOpen(true);
@@ -294,6 +303,9 @@ export default function Roster() {
               </div>
             </div>
           )}
+          {wrestlers.length === 0 && (
+            <p role="status">No wrestlers have been added.</p>
+          )}
         </>
       )}
 
@@ -355,6 +367,9 @@ export default function Roster() {
                 ))}
               </div>
             </div>
+          )}
+          {tagTeams.length === 0 && (
+            <p role="status">No tag teams have been added.</p>
           )}
         </>
       )}
