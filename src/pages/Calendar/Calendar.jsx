@@ -528,7 +528,7 @@ function Calendar() {
     if (schemaError) {
       console.error("Could not verify show-card order support:", schemaError);
       alert(
-        "Could not save this card's order. Apply the show-card ordering migration in Supabase and try again.",
+        `Could not save this card's order: ${schemaError.message}. Apply the show-card ordering migration in Supabase and try again.`,
       );
       return;
     }
